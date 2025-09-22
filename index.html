@@ -612,25 +612,21 @@ Status Sumur :
                 console.warn("Bagian 'Sumur dengan produksi terbesar' tidak ditemukan.");
                 return;
             }
-
+            
             const wellsData = [];
-            // Mulai dari baris setelah header dan sub-header
+            // Regex yang lebih kuat untuk menangkap data
+            const wellRegex = /^\s*(\d+\.)\s*(.*?)\s*:\s*([\d\s]+)\s*\/\s*([\d\s]+)\s*:\s*([\d\s]+)\s*$/;
+            
             for (let i = startIndex + 1; i < startIndex + 6 && i < lines.length; i++) {
-                const line = lines[i].trim();
-                if (line.match(/^[\d.]+\./)) { // Pastikan baris adalah entri sumur
-                    const parts = line.split(':');
-                    const wellName = parts[0].replace(/^[\d.]+\./, '').trim();
-                    
-                    const productionData = parts[1].split('/').map(p => p.trim());
-                    const gross = productionData[0].replace(/[\s\u00A0]/g, ''); // Hapus spasi dan non-breaking space
-                    const nett = productionData[1].replace(/[\s\u00A0]/g, '');
-                    const gas = parts[2].trim();
-                    
+                const line = lines[i];
+                const match = line.match(wellRegex);
+                if (match) {
+                    const [, rank, name, gross, nett, gas] = match;
                     wellsData.push({
-                        name: wellName,
-                        gross: gross,
-                        nett: nett,
-                        gas: gas
+                        name: name.trim(),
+                        gross: gross.trim(),
+                        nett: nett.trim(),
+                        gas: gas.trim()
                     });
                 }
             }
