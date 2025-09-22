@@ -236,10 +236,33 @@
         
         setLogLevel('debug');
 
-        // PENTING: Menggunakan konfigurasi Firebase yang Anda sediakan
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        // PENTING: Menggunakan konfigurasi Firebase yang disediakan
+        let firebaseConfig = {};
+        let firebaseInitialized = false;
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        try {
+            const rawConfig = typeof __firebase_config !== 'undefined' ? __firebase_config : '{}';
+            if (rawConfig && rawConfig.trim() !== '{}' && rawConfig.trim() !== '') {
+                firebaseConfig = JSON.parse(rawConfig);
+                firebaseInitialized = true;
+            } else {
+                throw new Error("Konfigurasi Firebase tidak ditemukan atau kosong.");
+            }
+        } catch (e) {
+            console.error("Gagal memproses konfigurasi Firebase:", e);
+            const loadingOverlay = document.getElementById('loading-overlay');
+            if (loadingOverlay) {
+                loadingOverlay.innerHTML = `
+                    <div class="p-6 bg-red-100 border border-red-400 text-red-700 rounded-lg shadow-md">
+                        <p class="font-bold text-lg mb-2">Kesalahan Konfigurasi</p>
+                        <p class="text-sm">Konfigurasi Firebase tidak valid. Mohon hubungi administrator.</p>
+                        <p class="mt-2 text-xs text-red-500">Detail: ${e.message}</p>
+                    </div>
+                `;
+            }
+        }
 
         let db;
         let auth;
@@ -280,15 +303,12 @@
         }
         
         async function initializeFirebaseAndLoadData() {
+            if (!firebaseInitialized) {
+                console.error("Firebase tidak diinisialisasi. Menghentikan pemuatan data.");
+                return;
+            }
+
             try {
-                if (!firebaseConfig.projectId) {
-                    console.error("Firebase config is missing or incomplete.");
-                    const loadingOverlay = document.getElementById('loading-overlay');
-                    if (loadingOverlay) {
-                        loadingOverlay.querySelector('p').textContent = 'Firebase config tidak lengkap.';
-                    }
-                    return;
-                }
                 const app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
@@ -813,7 +833,6 @@ Status Sumur :
             const loadingOverlay = document.getElementById('loading-overlay');
             if (loadingOverlay) loadingOverlay.style.display = 'flex';
         });
-
     </script>
 </body>
 </html>
