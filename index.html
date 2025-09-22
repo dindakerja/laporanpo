@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Produksi & Proyek</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        [contenteditable="true"]:hover {
+            outline: 1px dashed #d1d5db;
+        }
+        [contenteditable="true"]:focus {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+            background-color: #f9fafb;
+        }
+        /* Custom progress bar styles */
+        .progress-bar {
+            height: 8px;
+            border-radius: 9999px;
+            background-color: #e5e7eb;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: #10b981;
+            transition: width 0.3s ease-in-out;
+        }
+        /* Modal styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-4 sm:p-8">
+
+    <div class="max-w-7xl mx-auto">
+        <header class="text-center mb-10 relative">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-800">Dashboard Produksi & Progres Proyek</h1>
+            <p class="text-sm sm:text-base text-gray-500 mt-2">
+                <span contenteditable="true">Laporan Harian Produksi Field Rantau</span>
+            </p>
+            <button onclick="openFullReportEditor()" class="absolute top-0 right-0 mt-2 mr-2 px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition-colors">
+                Edit Laporan
+            </button>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Main Content: Laporan Harian -->
+            <div class="lg:col-span-2 space-y-6">
+
+                <!-- Key Metrics Section -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Ringkasan Produksi</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+                            <p class="text-3xl font-bold text-blue-600" id="total-prod-rtu" contenteditable="true">1,811</p>
+                            <p class="text-sm font-medium text-blue-500 mt-1">Total Prod RTU (bbls)</p>
+                            <p class="text-xs text-gray-400" id="total-prod-rtu-change" contenteditable="true">(+8 thd kemarin)</p>
+                        </div>
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+                            <p class="text-3xl font-bold text-green-600" id="prod-rtu-aceh" contenteditable="true">1,733</p>
+                            <p class="text-sm font-medium text-green-500 mt-1">Prod RTU-Aceh (bbls)</p>
+                            <p class="text-xs text-gray-400" id="prod-rtu-aceh-change" contenteditable="true">(+22 thd kemarin)</p>
+                        </div>
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
+                            <p class="text-3xl font-bold text-yellow-600" id="prod-rtu-sumut" contenteditable="true">78</p>
+                            <p class="text-sm font-medium text-yellow-500 mt-1">Prod RTU-Sumut (bbls)</p>
+                            <p class="text-xs text-gray-400" id="prod-rtu-sumut-change" contenteditable="true">(-14 thd kemarin)</p>
+                        </div>
+                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
+                            <p class="text-3xl font-bold text-gray-600" id="crude-oil-stock" contenteditable="true">196,199</p>
+                            <p class="text-sm font-medium text-gray-500 mt-1">CRUDE OIL STOCK (bbls)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sumur Status Section -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Status Sumur</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                            <h3 class="font-semibold text-red-600 mb-2">Sumur Low <span id="sumur-low-bbls" contenteditable="true">(-41.5 Bbls)</span></h3>
+                            <ul class="text-sm text-gray-700 space-y-1" id="sumur-low-list">
+                                <li contenteditable="true">P-436/4 jam, 10.57 bbl (Water Cut Naik 50-73%)</li>
+                                <li contenteditable="true">P-414/5 jam, 7.28 bbl (Water Cut Naik 80-93%)</li>
+                                <li contenteditable="true">KSB-016/3 jam, 6.53 bbl (Fluktuasi Produksi)</li>
+                            </ul>
+                            <a href="#" class="text-xs text-red-400 hover:underline" onclick="showMore('low')">Lihat lebih banyak...</a>
+                        </div>
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                            <h3 class="font-semibold text-green-600 mb-2">Sumur Gain <span id="sumur-gain-bbls" contenteditable="true">(+79.07 Bbls)</span></h3>
+                            <ul class="text-sm text-gray-700 space-y-1" id="sumur-gain-list">
+                                <li contenteditable="true">KSB-044/9 jam, 29.04 bbl (Water Cut Turun 48-43%)</li>
+                                <li contenteditable="true">P-417/4 jam, 17.92 bbl (Water Cut Turun 67-7%)</li>
+                                <li contenteditable="true">P-445/15 jam, 6.46 bbl (Fluktuasi Produksi)</li>
+                            </ul>
+                            <a href="#" class="text-xs text-green-400 hover:underline" onclick="showMore('gain')">Lihat lebih banyak...</a>
+                        </div>
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <h3 class="font-semibold text-yellow-600 mb-2">Sumur Off <span id="sumur-off-bbls" contenteditable="true">(-12.89 Bbls)</span></h3>
+                            <ul class="text-sm text-gray-700 space-y-1" id="sumur-off-list">
+                                <li contenteditable="true">P-419/24 jam, 10.22 bbl (Operasional Rig)</li>
+                                <li contenteditable="true">P-473/1 jam, 2.67 bbl (Trouble Fuse putus)</li>
+                                <li contenteditable="true">KSB-009/8 jam, 0.00 bbl (Program Ganti Elmot)</li>
+                            </ul>
+                            <a href="#" class="text-xs text-yellow-400 hover:underline" onclick="showMore('off')">Lihat lebih banyak...</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gas & Water Management Section -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Manajemen Gas & Air</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-sm font-medium text-gray-700" contenteditable="true">Prod Gas (Mmscfd)</span>
+                                <span class="text-sm font-bold text-gray-900" id="prod-gas" contenteditable="true">2.3329 (72.2%)</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 72.2%;"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-sm font-medium text-gray-700" contenteditable="true">Total Water Injection (bwpd)</span>
+                                <span class="text-sm font-bold text-gray-900" id="water-injection" contenteditable="true">21,620 (100.7%)</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 100%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Sumur & Produksi Per Struktur -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Detail Tambahan</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <h3 class="font-semibold text-lg text-gray-700 mb-2">Produksi per Struktur</h3>
+                            <ul class="text-sm text-gray-600 space-y-1" id="produksi-struktur-list">
+                                <li contenteditable="true">RTU : 1177 (-31)</li>
+                                <li contenteditable="true">KSB : 586 (+42)</li>
+                                <li contenteditable="true">KLD : 83 (-3)</li>
+                                <li contenteditable="true">SRJ : 0 (0)</li>
+                                <li contenteditable="true">SBL : 0 (0)</li>
+                                <li contenteditable="true">PPG : 0 (0)</li>
+                                <li contenteditable="true">PRP : 0 (0)</li>
+                                <li class="font-bold text-gray-800" contenteditable="true">TOTAL : 1846 (+8)</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-lg text-gray-700 mb-2">Status Sumur</h3>
+                            <ul class="text-sm text-gray-600 space-y-1" id="status-sumur-list">
+                                <li contenteditable="true">Jumlah Sumur Produksi Minyak : 88</li>
+                                <li contenteditable="true">Jumlah Sumur Produksi Gas : 4</li>
+                                <li contenteditable="true">Jumlah Sumur Injeksi : 41</li>
+                                <li contenteditable="true">Jumlah Sumur Off : 47</li>
+                                <li contenteditable="true">Jumlah Sumur Suspended : 822</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Side Content: Progres Proyek -->
+            <div class="lg:col-span-1 space-y-6">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Progres Proyek</h2>
+                    <div id="projects-container" class="space-y-4">
+                        <!-- Project cards will be injected here by JavaScript -->
+                    </div>
+                    <button onclick="addProject()" class="mt-6 w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition-all">
+                        Tambah Proyek
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Full Report Editing -->
+    <div id="edit-modal" class="modal hidden">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-11/12 max-w-2xl h-5/6 flex flex-col">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Edit Laporan Harian</h2>
+            <textarea id="report-editor" class="flex-grow w-full border border-gray-300 rounded-lg p-4 resize-none mb-4 focus:outline-none focus:border-blue-500 text-sm leading-relaxed"></textarea>
+            <div class="flex justify-end space-x-4">
+                <button onclick="closeFullReportEditor()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors">
+                    Tutup
+                </button>
+                <button onclick="saveFullReport()" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">
+                    Simpan Perubahan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initial data for project cards
+        const projects = [
+            { name: 'Implementasi Sistem ERP', team: 'Tim Alpha', dueDate: '30 Okt 2025', progress: 75 },
+            { name: 'Peningkatan Keamanan Data', team: 'Tim Beta', dueDate: '15 Nov 2025', progress: 50 },
+            { name: 'Pengembangan Aplikasi Mobile', team: 'Tim Gamma', dueDate: '20 Nov 2025', progress: 90 },
+            { name: 'Integrasi IoT di Lapangan', team: 'Tim Delta', dueDate: '10 Des 2025', progress: 40 },
+            { name: 'Optimalisasi Produksi', team: 'Tim Epsilon', dueDate: '05 Jan 2026', progress: 65 },
+            { name: 'Modernisasi Infrastruktur', team: 'Tim Zeta', dueDate: '25 Jan 2026', progress: 80 },
+            { name: 'Pelatihan Karyawan Baru', team: 'Tim Eta', dueDate: '01 Feb 2026', progress: 95 },
+            { name: 'Audit Keuangan Triwulan', team: 'Tim Theta', dueDate: '28 Feb 2026', progress: 30 }
+        ];
+
+        // The full report text to be used in the editor modal
+        const fullReportText = `Assalamualaikum Warahmatullahi Wabarakatuh
+
+LAPORAN HARIAN PRODUKSI FIELD RANTAU, MINGGU 21 SEPTEMBER 2025.
+
+Produksi RTU Non Recover (std)	= 1,637 bbls (+27 thd kemarin).
+Recover/berkala (std)                      =   174 bbls (-19 thd kemarin).
+Total Prod RTU (std)                        = 1,811 bbls ( +8 thd kemarin), 69%.
+MTD = 1,747 bopd (66%), YTD = 1,933 bopd (76%).
+
+Total Prod RTU-Aceh (std)	= 1,733 bbls (+22 thd kemarin), 72%.
+MTD = 1,669 bopd (69%), YTD = 1,866 bopd (79%).
+
+Total Prod RTU-Sumut (std)	= 78 bbls (-14 thd kemarin), 35%.
+MTD = 78 bopd (35%), YTD = 67 bopd (42%).
+
+Sumur Low = -41.5 Bbls, dari 11 sumur
+* P-436/4 jam, 10.57 bbl (Water Cut Naik dari 50-73%)
+* P-414/5 jam, 7.28 bbl (Water Cut Naik dari 80-93%)
+* KSB-016/3 jam, 6.53 bbl (Fluktuasi Produksi)
+* KSB-064/9 jam, 5.63 bbl (Water Cut Naik dari 0-33%)
+* KSB-058/9 jam, 3.73 bbl (Tdk ada Penerimaan di SP)
+* P-183/14 jam, 3.56 bbl (Water Cut Naik dari 94-95%)
+* P-398/4 jam, 2.04 bbl (Water Cut Naik dari 93-94%)
+* KLD-018/6 jam, 0.85 bbl (Fluktuasi Produksi)
+* KSB-052/7 jam, 0.83 bbl (Fluktuasi Produksi)
+* P-420/6 jam, 0.34 bbl (Water Cut Naik dari 70-83%)
+* KSB-042/5 jam, 0.14 bbl (Water Cut Naik dari 67-75%)
+
+Sumur Gain = +79.07 Bbls, dari 8 sumur
+* KSB-044/9 jam, 29.04 bbl (Water Cut Turun dari 48-43%)
+* P-417/4 jam, 17.92 bbl (Water Cut Turun dari 67-7%)
+* P-445/15 jam, 6.46 bbl (Fluktuasi Produksi)
+* P-416/6 jam, 6.43 bbl (Water Cut Turun dari 94-92%)
+* P-406/12 jam, 6.37 bbl (Fluktuasi Produksi)
+* P-467/4 jam, 6.3 bbl (Fluktuasi Produksi)
+* P-383/4 jam, 4.2 bbl (Fluktuasi Produksi)
+* P-347/6 jam, 2.35 bbl (Water Cut Turun dari 41-36%)
+
+Sumur Off = -12.89 Bbls, dari 3 Sumur												
+Planned Shutdown = -
+Unplanned Shutdown = 
+* P-419/24 jam, 10.22 bbl PU, Stop ops jam 00.00 s/d Sekarang, (Operasional Rig RTU#02 di P-427)
+* P-473/1 jam, 2.67 bbl HPU, Stop ops jam 15.20 s/d 16.20 Wib, (Trouble Fuse putus)
+* KSB-009/8 jam, 0.00 bbl HPU, Stop ops jam 11.00 s/d 19.00 Wib, (Program Ganti Elmot)
+																
+ACTL : 124,775
+CRUDE OIL STOCK	: 196,199 bbls.
+
+Produksi Per Struktur:
+- RTU  :  1177 (-31)
+- SRJ  :     0 (0)
+- KSB  :   586 (+42)
+- SBL  :     0 (0)
+- KLD  :    83 (-3)
+- PPG  :     0 (0)
+- PRP  :     0 (0)
+----------------------
+TOTAL  :  1846 (+8)
+
+Prod Gas (Mmscfd) = 2.3329 (-0.0357 Turun dari fluktuasi sumur); 72.2% thd sasaran (3.2303),
+Gas MTD September (Mmscfd) = 2.3480 (72.7%) thd sasaran, YTD = 2.4894 (83.5%).
+
+Prod Gas RTU-Aceh (Mmscfd) = 2.1437 (95.2%) thd sasaran 2.2515,
+Gas MTD = 2.1434 (95.2%), YTD = 2.2806 (104.1%).
+
+Prod Gas RTU-Sumut (Mmscfd) = 0.1892 (19.3%) thd sasaran 0.9788,
+Gas MTD = 0.2063 (21.1%), YTD = 0.2090 (26.4%).
+
+Water Management :		
+Total Water Production 	: 21,476 bwpd
+Total Water Injection 	: 21,620 bwpd (100.7%)
+Total Active Inj. Wells	: 40 wells
+Alur Bemban Pres.Inj       : 910 Psi
+
+Sepuluh (10) Sumur dengan produksi terbesar:
+	       Gross / Nett: Gas
+1. KSB-067/ESP : 459 / 182  : 40
+2. KSB-044/ESP : 200 / 113  : 34
+3. P-347/HPU   : 164 / 106  : 0
+4. P-406/ESP   : 975 /  90  : 18
+5. P-458/HPU   :  84 /  84  : 0
+6. KLD-018/ESP : 141 /  84  : 0
+7. P-348/ESP   :1308 /  75  : 35
+8. P-400/ESP   :1060 /  75  : 44
+9. P-474/ESP   : 219 /  62  : 24
+10. P-473/HPU   : 111 /  61  : 32
+
+Status Sumur :	
+1. Jumlah Sumur Produksi Minyak : 88
+2. Jumlah Sumur Produksi Gas    : 4
+3. Jumlah Sumur Injeksi        	: 41
+4. Jumlah Sumur Off             : 47
+5. Jumlah Sumur Suspended      	: 822 
+(643 diketahui / 180 tidak diketahui).`;
+
+        // Function to create and populate a project card
+        function createProjectCard(project) {
+            const projectCard = document.createElement('div');
+            projectCard.className = 'bg-gray-50 border border-gray-200 rounded-lg p-4 shadow-sm space-y-2';
+            projectCard.innerHTML = `
+                <h3 class="font-semibold text-gray-800" contenteditable="true">${project.name}</h3>
+                <p class="text-xs text-gray-500">
+                    <span class="font-medium">Tim:</span> <span contenteditable="true">${project.team}</span>
+                </p>
+                <p class="text-xs text-gray-500">
+                    <span class="font-medium">Jatuh Tempo:</span> <span contenteditable="true">${project.dueDate}</span>
+                </p>
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-xs font-medium text-gray-500">Progres:</span>
+                        <span class="text-sm font-bold text-gray-700" data-progress-value>${project.progress}%</span>
+                    </div>
+                    <input type="range" min="0" max="100" value="${project.progress}" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
+                </div>
+            `;
+            const slider = projectCard.querySelector('input[type="range"]');
+            const valueSpan = projectCard.querySelector('[data-progress-value]');
+            slider.addEventListener('input', (event) => {
+                valueSpan.textContent = `${event.target.value}%`;
+            });
+            return projectCard;
+        }
+
+        // Function to handle the "Tambah Proyek" button
+        function addProject() {
+            const projectsContainer = document.getElementById('projects-container');
+            const newProject = {
+                name: 'Proyek Baru',
+                team: 'Tim Baru',
+                dueDate: 'Tanggal Jatuh Tempo',
+                progress: 0
+            };
+            projectsContainer.appendChild(createProjectCard(newProject));
+        }
+
+        // Function to show the full report editor modal
+        function openFullReportEditor() {
+            const modal = document.getElementById('edit-modal');
+            const editor = document.getElementById('report-editor');
+            editor.value = fullReportText;
+            modal.classList.remove('hidden');
+        }
+
+        // Function to close the modal
+        function closeFullReportEditor() {
+            const modal = document.getElementById('edit-modal');
+            modal.classList.add('hidden');
+        }
+
+        // Function to save and parse the full report text back to the dashboard
+        function saveFullReport() {
+            const newText = document.getElementById('report-editor').value;
+            const lines = newText.split('\n');
+            const data = {};
+
+            lines.forEach(line => {
+                // Gunakan regex untuk parsing yang lebih tangguh
+                const totalProdRtuMatch = line.match(/Total Prod RTU \(std\)\s*=\s*(\d{1,3},?\d*)\s*bbls\s*\((.*?)\)/);
+                if (totalProdRtuMatch) {
+                    data.totalProdRtu = totalProdRtuMatch[1];
+                    data.totalProdRtuChange = `(${totalProdRtuMatch[2].trim()})`;
+                }
+
+                const prodRtuAcehMatch = line.match(/Total Prod RTU-Aceh \(std\)\s*=\s*(\d{1,3},?\d*)\s*bbls\s*\((.*?)\)/);
+                if (prodRtuAcehMatch) {
+                    data.prodRtuAceh = prodRtuAcehMatch[1];
+                    data.prodRtuAcehChange = `(${prodRtuAcehMatch[2].trim()})`;
+                }
+
+                const prodRtuSumutMatch = line.match(/Total Prod RTU-Sumut \(std\)\s*=\s*(\d{1,3},?\d*)\s*bbls\s*\((.*?)\)/);
+                if (prodRtuSumutMatch) {
+                    data.prodRtuSumut = prodRtuSumutMatch[1];
+                    data.prodRtuSumutChange = `(${prodRtuSumutMatch[2].trim()})`;
+                }
+
+                const crudeStockMatch = line.match(/CRUDE OIL STOCK\s*:\s*(\d{1,3},?\d*)\s*bbls/);
+                if (crudeStockMatch) {
+                    data.crudeOilStock = crudeStockMatch[1];
+                }
+                
+                const prodGasMatch = line.match(/Prod Gas \(Mmscfd\)\s*=\s*([\d\.]*)\s*\((.*?)\)/);
+                if (prodGasMatch) {
+                    data.prodGas = `${prodGasMatch[1]} (${prodGasMatch[2].trim()})`;
+                }
+
+                const waterInjMatch = line.match(/Total Water Injection\s*:\s*(\d{1,3},?\d*)\s*bwpd\s*\((.*?)\)/);
+                if (waterInjMatch) {
+                    data.waterInjection = `${waterInjMatch[1]} (${waterInjMatch[2].trim()})`;
+                }
+
+                const sumurLowMatch = line.match(/Sumur Low\s*=\s*(.*)/);
+                if (sumurLowMatch) {
+                    data.sumurLow = sumurLowMatch[1].trim();
+                }
+
+                const sumurGainMatch = line.match(/Sumur Gain\s*=\s*(.*)/);
+                if (sumurGainMatch) {
+                    data.sumurGain = sumurGainMatch[1].trim();
+                }
+
+                const sumurOffMatch = line.match(/Sumur Off\s*=\s*(.*)/);
+                if (sumurOffMatch) {
+                    data.sumurOff = sumurOffMatch[1].trim();
+                }
+            });
+
+            // Update the main dashboard with the new parsed data, dengan cek null
+            if (data.totalProdRtu) document.getElementById('total-prod-rtu').textContent = data.totalProdRtu;
+            if (data.totalProdRtuChange) document.getElementById('total-prod-rtu-change').textContent = data.totalProdRtuChange;
+            if (data.prodRtuAceh) document.getElementById('prod-rtu-aceh').textContent = data.prodRtuAceh;
+            if (data.prodRtuAcehChange) document.getElementById('prod-rtu-aceh-change').textContent = data.prodRtuAcehChange;
+            if (data.prodRtuSumut) document.getElementById('prod-rtu-sumut').textContent = data.prodRtuSumut;
+            if (data.prodRtuSumutChange) document.getElementById('prod-rtu-sumut-change').textContent = data.prodRtuSumutChange;
+            if (data.crudeOilStock) document.getElementById('crude-oil-stock').textContent = data.crudeOilStock;
+            if (data.prodGas) document.getElementById('prod-gas').textContent = data.prodGas;
+            if (data.waterInjection) document.getElementById('water-injection').textContent = data.waterInjection;
+            if (data.sumurLow) document.getElementById('sumur-low-bbls').textContent = data.sumurLow;
+            if (data.sumurGain) document.getElementById('sumur-gain-bbls').textContent = data.sumurGain;
+            if (data.sumurOff) document.getElementById('sumur-off-bbls').textContent = data.sumurOff;
+
+
+            // Update list items for Sumur Low, Gain, and Off
+            const sumurLowList = document.getElementById('sumur-low-list');
+            const sumurGainList = document.getElementById('sumur-gain-list');
+            const sumurOffList = document.getElementById('sumur-off-list');
+
+            const lowListStart = newText.indexOf('Sumur Low =');
+            const gainListStart = newText.indexOf('Sumur Gain =');
+            const offListStart = newText.indexOf('Sumur Off =');
+            const actlStart = newText.indexOf('ACTL :');
+
+            if (lowListStart !== -1 && gainListStart !== -1) {
+                const lowListText = newText.substring(lowListStart, gainListStart).trim().split('\n').slice(1);
+                updateList(sumurLowList, lowListText);
+            } else {
+                updateList(sumurLowList, []); // Clear the list if the section is not found
+            }
+            if (gainListStart !== -1 && offListStart !== -1) {
+                const gainListText = newText.substring(gainListStart, offListStart).trim().split('\n').slice(1);
+                updateList(sumurGainList, gainListText);
+            } else {
+                updateList(sumurGainList, []); // Clear the list if the section is not found
+            }
+            if (offListStart !== -1 && actlStart !== -1) {
+                const offListText = newText.substring(offListStart, actlStart).trim().split('\n').slice(1);
+                updateList(sumurOffList, offListText);
+            } else {
+                updateList(sumurOffList, []); // Clear the list if the section is not found
+            }
+            
+            closeFullReportEditor();
+        }
+
+        // Helper function to update a list with new content
+        function updateList(ulElement, newLines) {
+            ulElement.innerHTML = '';
+            newLines.forEach(line => {
+                const li = document.createElement('li');
+                li.textContent = line.trim();
+                li.setAttribute('contenteditable', 'true');
+                ulElement.appendChild(li);
+            });
+        }
+        
+        // Dummy function to demonstrate 'Lihat lebih banyak' links
+        function showMore(section) {
+            alert(`Fungsionalitas 'Lihat lebih banyak' akan menampilkan detail lebih lanjut tentang ${section}.`);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const projectsContainer = document.getElementById('projects-container');
+            projects.forEach(project => {
+                projectsContainer.appendChild(createProjectCard(project));
+            });
+        });
+    </script>
+</body>
+</html>
