@@ -188,6 +188,9 @@
                     <button onclick="addProject()" class="mt-6 w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition-all">
                         Tambah Proyek
                     </button>
+                    <button onclick="deleteAllProjects()" class="mt-2 w-full py-2 px-4 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg shadow-md transition-all">
+                        Hapus Semua Proyek
+                    </button>
                 </div>
             </div>
         </div>
@@ -223,7 +226,7 @@
         ];
 
         // The full report text to be used in the editor modal
-        const fullReportText = `Assalamualaikum Warahmatullahi Wabarakatuh
+        let fullReportText = `Assalamualaikum Warahmatullahi Wabarakatuh
 
 LAPORAN HARIAN PRODUKSI FIELD RANTAU, MINGGU 21 SEPTEMBER 2025.
 
@@ -321,9 +324,14 @@ Status Sumur :
         // Function to create and populate a project card
         function createProjectCard(project) {
             const projectCard = document.createElement('div');
-            projectCard.className = 'bg-gray-50 border border-gray-200 rounded-lg p-4 shadow-sm space-y-2';
+            projectCard.className = 'bg-gray-50 border border-gray-200 rounded-lg p-4 shadow-sm space-y-2 relative';
             projectCard.innerHTML = `
-                <h3 class="font-semibold text-gray-800" contenteditable="true">${project.name}</h3>
+                <button onclick="deleteProject(this)" class="absolute top-2 right-2 text-red-500 hover:text-red-700 transition-colors">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+                <h3 class="font-semibold text-gray-800 pr-8" contenteditable="true">${project.name}</h3>
                 <p class="text-xs text-gray-500">
                     <span class="font-medium">Tim:</span> <span contenteditable="true">${project.team}</span>
                 </p>
@@ -358,6 +366,20 @@ Status Sumur :
             projectsContainer.appendChild(createProjectCard(newProject));
         }
 
+        // Function to delete a single project card
+        function deleteProject(buttonElement) {
+            const projectCard = buttonElement.closest('.bg-gray-50');
+            if (projectCard) {
+                projectCard.remove();
+            }
+        }
+
+        // Function to handle the "Hapus Semua Proyek" button
+        function deleteAllProjects() {
+            const projectsContainer = document.getElementById('projects-container');
+            projectsContainer.innerHTML = ''; // Clear all child elements
+        }
+
         // Function to show the full report editor modal
         function openFullReportEditor() {
             const modal = document.getElementById('edit-modal');
@@ -375,6 +397,9 @@ Status Sumur :
         // Function to save and parse the full report text back to the dashboard
         function saveFullReport() {
             const newText = document.getElementById('report-editor').value;
+            // PENTING: Perbarui variabel global agar editor selalu menampilkan versi terbaru
+            fullReportText = newText;
+            
             const lines = newText.split('\n');
             const data = {};
 
