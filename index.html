@@ -11,7 +11,7 @@
             font-family: 'Inter', sans-serif;
         }
         [contenteditable="true"]:hover {
-            outline: 1px dashed #d1d5db;
+            outline: 1px dashed #d1d5eb;
         }
         [contenteditable="true"]:focus {
             outline: 2px solid #3b82f6;
@@ -55,13 +55,13 @@
         }
     </style>
 </head>
-<body class="bg-gray-100 p-4 sm:p-8">
+<body class="bg-gray-100 p-4 sm:p-8 flex flex-col min-h-screen">
 
-    <div class="max-w-7xl mx-auto">
+    <div class="max-w-7xl mx-auto w-full flex-grow flex flex-col">
         <header class="text-center mb-10 relative">
             <h1 class="text-3xl sm:text-4xl font-bold text-gray-800">Dashboard Produksi & Progres Proyek</h1>
             <p class="text-sm sm:text-base text-gray-500 mt-2">
-                <span contenteditable="true">Laporan Harian Produksi Field Rantau</span>
+                <span id="report-title-date" contenteditable="true">Memuat Laporan Harian...</span>
             </p>
             <p id="user-id-display" class="text-xs text-gray-400 mt-1">Memuat...</p>
             <button id="edit-report-button" onclick="openFullReportEditor()" class="absolute top-0 right-0 mt-2 mr-2 px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
@@ -69,10 +69,10 @@
             </button>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main content container -->
+        <div class="flex flex-col md:flex-row gap-8">
             <!-- Main Content: Laporan Harian -->
-            <div class="lg:col-span-2 space-y-6">
-
+            <div class="md:w-2/3 space-y-6">
                 <!-- Key Metrics Section -->
                 <div class="bg-white rounded-xl shadow-lg p-6">
                     <h2 class="text-xl font-bold text-gray-800 mb-4">Ringkasan Produksi</h2>
@@ -178,7 +178,7 @@
             </div>
 
             <!-- Side Content: Progres Proyek -->
-            <div class="lg:col-span-1 space-y-6">
+            <div class="md:w-1/3 space-y-6">
                 <div class="bg-white rounded-xl shadow-lg p-6">
                     <h2 class="text-xl font-bold text-gray-800 mb-4">Progres Proyek</h2>
                     <div id="projects-container" class="space-y-4">
@@ -236,7 +236,6 @@
         
         setLogLevel('debug');
 
-        // Menggunakan konfigurasi Firebase yang benar
         const firebaseConfig = {
             apiKey: "AIzaSyCU4XFIAwkW2uqhwQR7mgWJW9fp6DsMZwM",
             authDomain: "laporanpo.firebaseapp.com",
@@ -291,7 +290,6 @@
                 auth = getAuth(app);
                 db = getFirestore(app);
 
-                // Otentikasi anonim untuk akses publik
                 await signInAnonymously(auth);
 
                 onAuthStateChanged(auth, async (user) => {
@@ -425,10 +423,14 @@ Status Sumur :
                     toggleButtons();
                 } catch (error) {
                     console.error("Kesalahan saat memproses laporan dari Firestore:", error);
+                    const loadingOverlay = document.getElementById('loading-overlay');
+                    if (loadingOverlay) loadingOverlay.style.display = 'none';
                     window.showMessageModal("Kesalahan", "Gagal memuat laporan. Periksa konsol untuk detail.");
                 }
             }, (error) => {
                 console.error("Gagal mendapatkan laporan dari Firestore:", error);
+                const loadingOverlay = document.getElementById('loading-overlay');
+                if (loadingOverlay) loadingOverlay.style.display = 'none';
                 window.showMessageModal("Kesalahan", "Gagal memuat laporan. Periksa konsol untuk detail.");
             });
 
@@ -447,10 +449,14 @@ Status Sumur :
                     toggleButtons();
                 } catch (error) {
                     console.error("Kesalahan saat memproses proyek dari Firestore:", error);
+                    const loadingOverlay = document.getElementById('loading-overlay');
+                    if (loadingOverlay) loadingOverlay.style.display = 'none';
                     window.showMessageModal("Kesalahan", "Gagal memuat proyek. Periksa konsol untuk detail.");
                 }
             }, (error) => {
                 console.error("Gagal mendapatkan proyek dari Firestore:", error);
+                const loadingOverlay = document.getElementById('loading-overlay');
+                if (loadingOverlay) loadingOverlay.style.display = 'none';
                 window.showMessageModal("Kesalahan", "Gagal memuat proyek. Periksa konsol untuk detail.");
             });
         }
@@ -458,6 +464,11 @@ Status Sumur :
         window.parseAndDisplayReport = (reportText) => {
             const lines = reportText.split('\n');
             const data = {};
+
+            const reportTitleMatch = lines.find(line => line.startsWith('LAPORAN HARIAN PRODUKSI FIELD RANTAU,'));
+            if (reportTitleMatch) {
+                safeUpdateText('report-title-date', reportTitleMatch);
+            }
 
             lines.forEach(line => {
                 const totalProdRtuMatch = line.match(/Total Prod RTU \(std\)\s*=\s*([\d,]*)\s*bbls\s*\((.*?)\)/);
@@ -777,7 +788,6 @@ Status Sumur :
                 const li = document.createElement('li');
                 li.textContent = line;
                 li.setAttribute('contenteditable', 'true');
-                // Add a border to each list item except the last one
                 if (index < linesToDisplay.length - 1) {
                      li.classList.add('border-b', 'border-gray-200', 'pb-2', 'mb-2');
                 }
