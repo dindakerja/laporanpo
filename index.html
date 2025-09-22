@@ -341,17 +341,17 @@ Total Prod RTU-Sumut (std)	= 78 bbls (-14 thd kemarin), 35%.
 MTD = 78 bopd (35%), YTD = 67 bopd (42%).
 
 Sumur Low = -41.5 Bbls, dari 11 sumur
-* P-436/4 jam, 10.57 bbl (Water Cut Naik dari 50-73%)
-* P-414/5 jam, 7.28 bbl (Water Cut Naik dari 80-93%)
-* KSB-016/3 jam, 6.53 bbl (Fluktuasi Produksi)
-* KSB-064/9 jam, 5.63 bbl (Water Cut Naik dari 0-33%)
-* KSB-058/9 jam, 3.73 bbl (Tdk ada Penerimaan di SP)
-* P-183/14 jam, 3.56 bbl (Water Cut Naik dari 94-95%)
-* P-398/4 jam, 2.04 bbl (Water Cut Naik dari 93-94%)
-* KLD-018/6 jam, 0.85 bbl (Fluktuasi Produksi)
-* KSB-052/7 jam, 0.83 bbl (Fluktuasi Produksi)
-* P-420/6 jam, 0.34 bbl (Water Cut Naik dari 70-83%)
-* KSB-042/5 jam, 0.14 bbl (Water Cut Naik dari 67-75%)
+* P-450/6 jam, 15.15 bbl (Water Cut Naik dari 85-89%)
+* P-082/5 jam, 13.44 bbl (Water Cut Naik dari 88-97%)
+* P-469/4 jam, 10.3 bbl (Fluktuasi Produksi)
+* P-347/6 jam, 9.39 bbl (Fluktuasi Produksi)
+* P-439/4 jam, 6.07 bbl (Water Cut Naik dari 87-88%)
+* KSB-042/6 jam, 4.84 bbl (Water Cut Naik dari 50-67%)
+* KSB-065/9 jam, 2.9 bbl (Fluktuasi Produksi)
+* P-270/14 jam, 1.78 bbl (Water Cut Naik dari 93-94%)
+* P-101/12 jam, 1.24 bbl (Fluktuasi Produksi)
+* KSB-061/7 jam, 0.42 bbl (Fluktuasi Produksi)
+* KLD-018/8 jam, 0.08 bbl (Water Cut Naik dari 41-42%)
 
 Sumur Gain = +79.07 Bbls, dari 8 sumur
 * KSB-044/9 jam, 29.04 bbl (Water Cut Turun dari 48-43%)
@@ -773,10 +773,14 @@ Status Sumur :
                 if (button) button.textContent = 'Lihat lebih banyak...';
             }
             
-            linesToDisplay.forEach(line => {
+            linesToDisplay.forEach((line, index) => {
                 const li = document.createElement('li');
                 li.textContent = line;
                 li.setAttribute('contenteditable', 'true');
+                // Add a border to each list item except the last one
+                if (index < linesToDisplay.length - 1) {
+                     li.classList.add('border-b', 'border-gray-200', 'pb-2', 'mb-2');
+                }
                 ulElement.appendChild(li);
             });
 
