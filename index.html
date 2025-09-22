@@ -208,10 +208,22 @@
                     <div id="projects-container" class="space-y-4">
                         <!-- Project cards will be injected here by JavaScript -->
                     </div>
-                    <button id="add-project-button" onclick="addProject()" class="mt-4 w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    <!-- Action Buttons for Project Management -->
+                    <div class="mt-4 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                         <button id="edit-projects-button" class="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                            Edit Proyek
+                        </button>
+                        <button id="save-projects-button" class="w-full py-2 px-4 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-md transition-all hidden">
+                            Simpan
+                        </button>
+                        <button id="cancel-projects-button" class="w-full py-2 px-4 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg shadow-md transition-all hidden">
+                            Batal
+                        </button>
+                    </div>
+                    <button id="add-project-button" onclick="addProject()" class="mt-2 w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed hidden">
                         Tambah Proyek
                     </button>
-                    <button id="delete-all-projects-button" onclick="deleteAllProjects()" class="mt-2 w-full py-2 px-4 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    <button id="delete-all-projects-button" onclick="deleteAllProjects()" class="mt-2 w-full py-2 px-4 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed hidden">
                         Hapus Semua Proyek
                     </button>
                 </div>
@@ -240,9 +252,14 @@
         <div class="bg-white rounded-xl shadow-lg p-6 max-w-sm text-center">
             <h3 class="text-lg font-semibold text-gray-800 mb-4" id="message-title"></h3>
             <p class="text-sm text-gray-600 mb-6" id="message-content"></p>
-            <button onclick="closeMessageModal()" class="w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">
-                OK
-            </button>
+            <div class="flex justify-center space-x-4" id="message-buttons">
+                 <button onclick="closeMessageModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors">
+                    Batal
+                </button>
+                <button onclick="closeMessageModal()" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">
+                    OK
+                </button>
+            </div>
         </div>
     </div>
 
@@ -278,6 +295,8 @@
         window.projectsData = [];
         let isReportLoaded = false;
         let isProjectsLoaded = false;
+        let isEditMode = false;
+        let localProjectsBuffer = [];
 
         function safeUpdateText(id, text) {
             const element = document.getElementById(id);
@@ -299,8 +318,6 @@
 
         function toggleButtons() {
             if (isReportLoaded && isProjectsLoaded) {
-                document.getElementById('add-project-button').disabled = false;
-                document.getElementById('delete-all-projects-button').disabled = false;
                 document.getElementById('edit-report-button').disabled = false;
                 const loadingOverlay = document.getElementById('loading-overlay');
                 if (loadingOverlay) loadingOverlay.style.display = 'none';
@@ -658,32 +675,56 @@ Status Sumur :
         window.db = db;
         window.auth = auth;
         window.userId = userId;
+        window.isEditMode = isEditMode;
+        window.localProjectsBuffer = localProjectsBuffer;
 
         function createProjectCard(project) {
             const projectCard = document.createElement('div');
             projectCard.className = 'bg-gray-50 border border-gray-200 rounded-lg p-4 shadow-sm space-y-2 relative';
             projectCard.dataset.id = project.id;
-            projectCard.innerHTML = `
+            
+            const content = isEditMode ? `
                 <button onclick="deleteProject('${project.id}')" class="absolute top-2 right-2 text-red-500 hover:text-red-700 transition-colors">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" />
                     </svg>
                 </button>
-                <h3 class="font-semibold text-gray-800 pr-8" contenteditable="true" oninput="updateProjectField('${project.id}', 'name', this.textContent)">${project.name}</h3>
+                <input type="text" class="font-semibold text-gray-800 w-full pr-8 bg-transparent focus:outline-none" value="${project.name}" oninput="updateLocalProject('${project.id}', 'name', this.value)">
+                <div class="text-xs text-gray-500">
+                    <span class="font-medium">Tim:</span>
+                    <input type="text" class="w-full bg-transparent focus:outline-none" value="${project.team}" oninput="updateLocalProject('${project.id}', 'team', this.value)">
+                </div>
+                <div class="text-xs text-gray-500">
+                    <span class="font-medium">Jatuh Tempo:</span>
+                    <input type="date" class="w-full bg-transparent focus:outline-none" value="${project.dueDate}" oninput="updateLocalProject('${project.id}', 'dueDate', this.value)">
+                </div>
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-xs font-medium text-gray-500">Progres:</span>
+                        <span class="text-sm font-bold text-gray-700" data-progress-value>${project.progress}%</span>
+                    </div>
+                    <input type="range" min="0" max="100" value="${project.progress}" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" oninput="updateLocalProgress('${project.id}', this.value, this)" />
+                </div>
+            ` : `
+                <h3 class="font-semibold text-gray-800 pr-8">${project.name}</h3>
                 <p class="text-xs text-gray-500">
-                    <span class="font-medium">Tim:</span> <span contenteditable="true" oninput="updateProjectField('${project.id}', 'team', this.textContent)">${project.team}</span>
+                    <span class="font-medium">Tim:</span> <span>${project.team}</span>
                 </p>
                 <p class="text-xs text-gray-500">
-                    <span class="font-medium">Jatuh Tempo:</span> <span contenteditable="true" oninput="updateProjectField('${project.id}', 'dueDate', this.textContent)">${project.dueDate}</span>
+                    <span class="font-medium">Jatuh Tempo:</span> <span>${project.dueDate}</span>
                 </p>
                 <div>
                     <div class="flex items-center justify-between mb-1">
                         <span class="text-xs font-medium text-gray-500">Progres:</span>
                         <span class="text-sm font-bold text-gray-700" data-progress-value>${project.progress}%</span>
                     </div>
-                    <input type="range" min="0" max="100" value="${project.progress}" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" oninput="updateProgress('${project.id}', this.value, this)" />
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${project.progress}%;"></div>
+                    </div>
                 </div>
             `;
+            
+            projectCard.innerHTML = content;
             return projectCard;
         }
 
@@ -697,113 +738,154 @@ Status Sumur :
             }
         };
 
-        window.updateProgress = async (id, value, element) => {
+        window.updateLocalProject = (id, field, value) => {
+            const project = localProjectsBuffer.find(p => p.id === id);
+            if (project) {
+                project[field] = value;
+            }
+        };
+
+        window.updateLocalProgress = (id, value, element) => {
             const valueSpan = element.closest('div').querySelector('[data-progress-value]');
             valueSpan.textContent = `${value}%`;
-            if (!db) {
-                console.error("Database tidak siap. Tidak dapat memperbarui progres.");
-                return;
-            }
-            try {
-                const projectsColRef = collection(db, 'artifacts', appId, 'public', 'data', 'projects');
-                const projectDocRef = doc(projectsColRef, id);
-                await updateDoc(projectDocRef, { progress: parseInt(value) });
-            } catch (e) {
-                console.error("Gagal memperbarui progres:", e);
-                window.showMessageModal("Kesalahan", `Gagal memperbarui progres: ${e.message}`);
-            }
-        };
-
-        window.updateProjectField = async (id, field, value) => {
-             if (!db) {
-                console.error("Database tidak siap. Tidak dapat memperbarui bidang proyek.");
-                return;
-            }
-            try {
-                const projectsColRef = collection(db, 'artifacts', appId, 'public', 'data', 'projects');
-                const projectDocRef = doc(projectsColRef, id);
-                await updateDoc(projectDocRef, { [field]: value });
-            } catch (e) {
-                console.error("Gagal memperbarui bidang proyek:", e);
-                window.showMessageModal("Kesalahan", `Gagal memperbarui proyek: ${e.message}`);
-            }
+            updateLocalProject(id, 'progress', parseInt(value));
         };
         
-        window.addProject = async () => {
+        // New functions for edit mode management
+        function toggleProjectEditMode(isEditing) {
+            isEditMode = isEditing;
+            const editBtn = document.getElementById('edit-projects-button');
+            const saveBtn = document.getElementById('save-projects-button');
+            const cancelBtn = document.getElementById('cancel-projects-button');
+            const addBtn = document.getElementById('add-project-button');
+            const deleteBtn = document.getElementById('delete-all-projects-button');
+            
+            if (isEditing) {
+                localProjectsBuffer = JSON.parse(JSON.stringify(window.projectsData));
+                renderProjectCards(localProjectsBuffer);
+                editBtn.classList.add('hidden');
+                saveBtn.classList.remove('hidden');
+                cancelBtn.classList.remove('hidden');
+                addBtn.classList.remove('hidden');
+                deleteBtn.classList.remove('hidden');
+            } else {
+                renderProjectCards(window.projectsData);
+                editBtn.classList.remove('hidden');
+                saveBtn.classList.add('hidden');
+                cancelBtn.classList.add('hidden');
+                addBtn.classList.add('hidden');
+                deleteBtn.classList.add('hidden');
+            }
+        }
+
+        async function saveProjects() {
             if (!db) {
-                console.error("Database tidak siap. Silakan coba lagi sebentar.");
-                window.showMessageModal("Gagal", "Database tidak siap. Coba lagi dalam beberapa detik.");
+                window.showMessageModal("Kesalahan", "Database tidak siap. Coba lagi dalam beberapa detik.");
                 return;
             }
+            const batch = writeBatch(db);
             const projectsColRef = collection(db, 'artifacts', appId, 'public', 'data', 'projects');
+
+            // Handle updates and additions
+            localProjectsBuffer.forEach(project => {
+                const docRef = doc(projectsColRef, project.id);
+                // We use set with merge: true to handle both new and existing documents
+                batch.set(docRef, project, { merge: true });
+            });
+            
+            // Handle deletions (find projects in original data but not in buffer)
+            const idsToDelete = window.projectsData.filter(
+                original => !localProjectsBuffer.some(updated => updated.id === original.id)
+            ).map(p => p.id);
+
+            idsToDelete.forEach(id => {
+                const docRef = doc(projectsColRef, id);
+                batch.delete(docRef);
+            });
+
+            try {
+                await batch.commit();
+                console.log("Proyek berhasil disimpan.");
+                window.showMessageModal("Berhasil", "Semua perubahan proyek berhasil disimpan!");
+            } catch (e) {
+                console.error("Gagal menyimpan proyek:", e);
+                window.showMessageModal("Kesalahan", `Gagal menyimpan proyek: ${e.message}`);
+            }
+            toggleProjectEditMode(false);
+        }
+
+        function cancelProjects() {
+            localProjectsBuffer = JSON.parse(JSON.stringify(window.projectsData));
+            toggleProjectEditMode(false);
+            window.showMessageModal("Dibatalkan", "Perubahan proyek telah dibatalkan.");
+        }
+
+        window.addProject = async () => {
+             const newProjectId = `new-${Date.now()}`;
             const newProject = {
+                id: newProjectId,
                 name: 'Proyek Baru',
                 team: 'Tim Baru',
-                dueDate: 'Tanggal Jatuh Tempo',
+                dueDate: new Date().toISOString().substring(0, 10),
                 progress: 0,
-                createdAt: serverTimestamp()
+                createdAt: new Date().toISOString()
             };
-            try {
-                await addDoc(projectsColRef, newProject);
-                console.log("Proyek baru berhasil ditambahkan.");
-            } catch (e) {
-                console.error("Gagal menambahkan proyek:", e);
-                window.showMessageModal("Gagal", `Gagal menambahkan proyek: ${e.message}`);
+            localProjectsBuffer.push(newProject);
+            renderProjectCards(localProjectsBuffer);
+            console.log("Proyek baru ditambahkan ke buffer lokal.");
+        };
+
+        window.deleteProject = (id) => {
+            const index = localProjectsBuffer.findIndex(p => p.id === id);
+            if (index > -1) {
+                localProjectsBuffer.splice(index, 1);
+                renderProjectCards(localProjectsBuffer);
+                console.log(`Proyek dengan ID ${id} dihapus dari buffer lokal.`);
             }
         };
 
-        window.deleteProject = async (id) => {
-            if (!db) {
-                console.error("Database tidak siap. Tidak dapat menghapus proyek.");
-                window.showMessageModal("Gagal", "Database tidak siap. Coba lagi dalam beberapa detik.");
-                return;
-            }
-            const projectsColRef = collection(db, 'artifacts', appId, 'public', 'data', 'projects');
-            const projectDocRef = doc(projectsColRef, id);
-            try {
-                await deleteDoc(projectDocRef);
-                console.log("Proyek berhasil dihapus.");
-            } catch (e) {
-                console.error("Gagal menghapus proyek:", e);
-                window.showMessageModal("Gagal", `Gagal menghapus proyek: ${e.message}`);
-            }
-        };
-
-        window.deleteAllProjects = async () => {
-            if (!db) {
-                console.error("Database tidak siap. Tidak dapat menghapus semua proyek.");
-                window.showMessageModal("Gagal", "Database tidak siap. Coba lagi dalam beberapa detik.");
-                return;
-            }
-            window.showMessageModal("Konfirmasi", "Apakah Anda yakin ingin menghapus semua proyek?", true, async () => {
-                const projectsColRef = collection(db, 'artifacts', appId, 'public', 'data', 'projects');
-                const projectsSnapshot = await getDocs(projectsColRef);
-                const batch = writeBatch(db);
-
-                projectsSnapshot.forEach(doc => {
-                    batch.delete(doc.ref);
-                });
-
-                try {
-                    await batch.commit();
-                    console.log("Semua proyek berhasil dihapus.");
-                } catch (e) {
-                    console.error("Gagal menghapus semua proyek:", e);
-                    window.showMessageModal("Gagal", `Gagal menghapus semua proyek: ${e.message}`);
-                }
+        window.deleteAllProjects = () => {
+            window.showMessageModal("Konfirmasi", "Apakah Anda yakin ingin menghapus semua proyek?", true, () => {
+                localProjectsBuffer = [];
+                renderProjectCards(localProjectsBuffer);
+                console.log("Semua proyek dihapus dari buffer lokal.");
             });
         };
-
+        
         window.showMessageModal = (title, content, isConfirm = false, onConfirm = null) => {
             const modal = document.getElementById('message-modal');
-            if (!modal) return;
+            const messageButtons = document.getElementById('message-buttons');
+            if (!modal || !messageButtons) return;
+            
             safeUpdateText('message-title', title);
             safeUpdateText('message-content', content);
-
-            const okButton = modal.querySelector('button');
-            okButton.textContent = 'OK';
-            okButton.onclick = closeMessageModal;
             
+            messageButtons.innerHTML = '';
+            
+            if (isConfirm) {
+                const confirmBtn = document.createElement('button');
+                confirmBtn.onclick = () => {
+                    if (onConfirm) onConfirm();
+                    closeMessageModal();
+                };
+                confirmBtn.className = 'px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors';
+                confirmBtn.textContent = 'OK';
+                
+                const cancelBtn = document.createElement('button');
+                cancelBtn.onclick = closeMessageModal;
+                cancelBtn.className = 'px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors';
+                cancelBtn.textContent = 'Batal';
+                
+                messageButtons.appendChild(cancelBtn);
+                messageButtons.appendChild(confirmBtn);
+            } else {
+                const okBtn = document.createElement('button');
+                okBtn.onclick = closeMessageModal;
+                okBtn.className = 'w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors';
+                okBtn.textContent = 'OK';
+                messageButtons.appendChild(okBtn);
+            }
+
             modal.classList.remove('hidden');
         };
 
@@ -925,6 +1007,9 @@ Status Sumur :
         };
         
         document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('edit-projects-button').onclick = () => toggleProjectEditMode(true);
+            document.getElementById('save-projects-button').onclick = saveProjects;
+            document.getElementById('cancel-projects-button').onclick = cancelProjects;
             window.initializeFirebaseAndLoadData();
             const loadingOverlay = document.getElementById('loading-overlay');
             if (loadingOverlay) loadingOverlay.style.display = 'flex';
