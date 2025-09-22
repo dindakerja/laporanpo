@@ -63,7 +63,9 @@
             <p class="text-sm sm:text-base text-gray-500 mt-2">
                 <span id="report-title-date" contenteditable="true">Memuat Laporan Harian...</span>
             </p>
-            <p id="user-id-display" class="text-xs text-gray-400 mt-1">Memuat...</p>
+            <p class="text-xs text-gray-400 mt-1">
+                <span id="user-id-display">Memuat ID Pengguna...</span> | Terakhir diperbarui: <span id="last-updated-date">...</span>
+            </p>
             <button id="edit-report-button" onclick="openFullReportEditor()" class="absolute top-0 right-0 mt-2 mr-2 px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
                 Edit Laporan
             </button>
@@ -75,7 +77,7 @@
             <div class="md:w-2/3 space-y-6">
                 <!-- Key Metrics Section -->
                 <div class="bg-white rounded-xl shadow-lg p-6">
-                    <h2 class="text-xl font-bold text-gray-800 mb-4">Ringkasan Produksi</h2>
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Ringkasan Produksi Minyak</h2>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
                             <p class="text-3xl font-bold text-blue-600" id="total-prod-rtu" contenteditable="true">...</p>
@@ -95,6 +97,32 @@
                         <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
                             <p class="text-3xl font-bold text-gray-600" id="crude-oil-stock" contenteditable="true">...</p>
                             <p class="text-sm font-medium text-gray-500 mt-1">CRUDE OIL STOCK (bbls)</p>
+                        </div>
+                    </div>
+                    
+                    <!-- New section for Gas production -->
+                    <h2 class="text-xl font-bold text-gray-800 mt-8 mb-4">Ringkasan Produksi Gas</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="bg-sky-50 border border-sky-200 rounded-lg p-4 text-center">
+                            <p class="text-3xl font-bold text-sky-600" id="prod-gas-total" contenteditable="true">...</p>
+                            <p class="text-sm font-medium text-sky-500 mt-1">Prod Gas Total (Mmscfd)</p>
+                            <p class="text-xs text-gray-400" id="prod-gas-total-change" contenteditable="true">...</p>
+                            <p class="text-xs font-medium text-gray-500 mt-2">MTD: <span id="prod-gas-mtd" contenteditable="true">...</span></p>
+                            <p class="text-xs font-medium text-gray-500">YTD: <span id="prod-gas-ytd" contenteditable="true">...</span></p>
+                        </div>
+                        <div class="bg-sky-50 border border-sky-200 rounded-lg p-4 text-center">
+                            <p class="text-3xl font-bold text-sky-600" id="prod-gas-aceh" contenteditable="true">...</p>
+                            <p class="text-sm font-medium text-sky-500 mt-1">Prod Gas RTU-Aceh (Mmscfd)</p>
+                            <p class="text-xs text-gray-400" id="prod-gas-aceh-percent" contenteditable="true">...</p>
+                            <p class="text-xs font-medium text-gray-500 mt-2">MTD: <span id="prod-gas-aceh-mtd" contenteditable="true">...</span></p>
+                            <p class="text-xs font-medium text-gray-500">YTD: <span id="prod-gas-aceh-ytd" contenteditable="true">...</span></p>
+                        </div>
+                        <div class="bg-sky-50 border border-sky-200 rounded-lg p-4 text-center">
+                            <p class="text-3xl font-bold text-sky-600" id="prod-gas-sumut" contenteditable="true">...</p>
+                            <p class="text-sm font-medium text-sky-500 mt-1">Prod Gas RTU-Sumut (Mmscfd)</p>
+                            <p class="text-xs text-gray-400" id="prod-gas-sumut-percent" contenteditable="true">...</p>
+                            <p class="text-xs font-medium text-gray-500 mt-2">MTD: <span id="prod-gas-sumut-mtd" contenteditable="true">...</span></p>
+                            <p class="text-xs font-medium text-gray-500">YTD: <span id="prod-gas-sumut-ytd" contenteditable="true">...</span></p>
                         </div>
                     </div>
                 </div>
@@ -121,27 +149,37 @@
                     </div>
                 </div>
 
+                <!-- Top 10 Wells Section -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Sepuluh (10) Sumur dengan Produksi Terbesar</h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left text-gray-600 border-collapse">
+                            <thead>
+                                <tr class="text-sm font-medium text-gray-500 uppercase bg-gray-50 rounded-lg">
+                                    <th class="py-3 px-4 rounded-tl-lg">Peringkat</th>
+                                    <th class="py-3 px-4">Nama Sumur</th>
+                                    <th class="py-3 px-4 text-center">Gross</th>
+                                    <th class="py-3 px-4 text-center">Nett</th>
+                                    <th class="py-3 px-4 rounded-tr-lg text-center">Gas</th>
+                                </tr>
+                            </thead>
+                            <tbody id="top-wells-table-body" class="divide-y divide-gray-200">
+                                <!-- Data akan diisi oleh JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
                 <!-- Gas & Water Management Section -->
                 <div class="bg-white rounded-xl shadow-lg p-6">
-                    <h2 class="text-xl font-bold text-gray-800 mb-4">Manajemen Gas & Air</h2>
-                    <div class="space-y-4">
-                        <div>
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="text-sm font-medium text-gray-700" contenteditable="true">Prod Gas (Mmscfd)</span>
-                                <span class="text-sm font-bold text-gray-900" id="prod-gas" contenteditable="true">...</span>
-                            </div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" id="prod-gas-fill"></div>
-                            </div>
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Manajemen Air</h2>
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-sm font-medium text-gray-700" contenteditable="true">Total Water Injection (bwpd)</span>
+                            <span class="text-sm font-bold text-gray-900" id="water-injection" contenteditable="true">...</span>
                         </div>
-                        <div>
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="text-sm font-medium text-gray-700" contenteditable="true">Total Water Injection (bwpd)</span>
-                                <span class="text-sm font-bold text-gray-900" id="water-injection" contenteditable="true">...</span>
-                            </div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" id="water-injection-fill"></div>
-                            </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="water-injection-fill"></div>
                         </div>
                     </div>
                 </div>
@@ -319,6 +357,7 @@
                     if (docSnap.exists()) {
                         const data = docSnap.data();
                         window.fullReportText = data.reportText || "";
+                        safeUpdateText('last-updated-date', data.lastUpdated ? new Date(data.lastUpdated.toDate()).toLocaleString() : 'Sekarang');
                         parseAndDisplayReport(window.fullReportText);
                         console.log("Laporan harian berhasil diperbarui dari Firestore.");
                     } else {
@@ -469,6 +508,9 @@ Status Sumur :
             if (reportTitleMatch) {
                 safeUpdateText('report-title-date', reportTitleMatch);
             }
+            
+            // Temporary storage for MTD/YTD values
+            const tempGasData = {};
 
             lines.forEach(line => {
                 const totalProdRtuMatch = line.match(/Total Prod RTU \(std\)\s*=\s*([\d,]*)\s*bbls\s*\((.*?)\)/);
@@ -493,13 +535,43 @@ Status Sumur :
                 if (crudeStockMatch) {
                     data.crudeOilStock = crudeStockMatch[1];
                 }
+                
+                const prodGasTotalMatch = line.match(/Prod Gas \(Mmscfd\) = ([\d\.]+) \((.*?)\);/);
+                if (prodGasTotalMatch) {
+                    data.prodGasTotal = prodGasTotalMatch[1];
+                    data.prodGasTotalChange = `(${prodGasTotalMatch[2].trim()})`;
+                }
 
-                const prodGasMatch = line.match(/Prod Gas \(Mmscfd\)\s*=\s*([\d\.]+)\s*\((.*?)\).*;\s*([\d\.]+)%\s*thd sasaran/);
-                if (prodGasMatch) {
-                    data.prodGas = `${prodGasMatch[1]} (${prodGasMatch[2].trim()})`;
-                    data.prodGasPercentage = parseFloat(prodGasMatch[3]);
+                const prodGasAcehMatch = line.match(/Prod Gas RTU-Aceh \(Mmscfd\) = ([\d\.]+) \((\d+\.\d+%)\)/);
+                if (prodGasAcehMatch) {
+                    data.prodGasAceh = prodGasAcehMatch[1];
+                    data.prodGasAcehPercent = `(${prodGasAcehMatch[2]})`;
                 }
                 
+                const prodGasSumutMatch = line.match(/Prod Gas RTU-Sumut \(Mmscfd\) = ([\d\.]+) \((\d+\.\d+%)\)/);
+                if (prodGasSumutMatch) {
+                    data.prodGasSumut = prodGasSumutMatch[1];
+                    data.prodGasSumutPercent = `(${prodGasSumutMatch[2]})`;
+                }
+                
+                const gasMtdYtdTotalMatch = line.match(/Gas MTD September.*?= ([\d\.]+) \((.*?)\), YTD = ([\d\.]+) \((.*?)\)/);
+                if (gasMtdYtdTotalMatch) {
+                    tempGasData.totalMtd = `${gasMtdYtdTotalMatch[1]} (${gasMtdYtdTotalMatch[2]})`;
+                    tempGasData.totalYtd = `${gasMtdYtdTotalMatch[3]} (${gasMtdYtdTotalMatch[4]})`;
+                }
+
+                const gasMtdYtdAcehMatch = line.match(/Gas MTD = ([\d\.]+) \((.*?)\), YTD = ([\d\.]+) \((.*?)\)/);
+                if (gasMtdYtdAcehMatch && !tempGasData.acehMtd) { // ensure we only capture the first match for Aceh
+                    tempGasData.acehMtd = `${gasMtdYtdAcehMatch[1]} (${gasMtdYtdAcehMatch[2]})`;
+                    tempGasData.acehYtd = `${gasMtdYtdAcehMatch[3]} (${gasMtdYtdAcehMatch[4]})`;
+                }
+                
+                const gasMtdYtdSumutMatch = line.match(/Gas MTD = ([\d\.]+) \((.*?)\), YTD = ([\d\.]+) \((.*?)\)/);
+                if (gasMtdYtdSumutMatch && !tempGasData.sumutMtd && tempGasData.acehMtd) { // capture the second match for Sumut
+                     tempGasData.sumutMtd = `${gasMtdYtdSumutMatch[1]} (${gasMtdYtdSumutMatch[2]})`;
+                     tempGasData.sumutYtd = `${gasMtdYtdSumutMatch[3]} (${gasMtdYtdSumutMatch[4]})`;
+                }
+
                 const waterInjMatch = line.match(/Total Water Injection\s*:\s*([\d,]*)\s*bwpd\s*\(([\d\.]+)%\)/);
                 if (waterInjMatch) {
                     data.waterInjection = `${waterInjMatch[1]} (${waterInjMatch[2].trim()}%)`;
@@ -522,6 +594,7 @@ Status Sumur :
                 }
             });
 
+            // Update Oil Metrics
             safeUpdateText('total-prod-rtu', data.totalProdRtu);
             safeUpdateText('total-prod-rtu-change', data.totalProdRtuChange);
             safeUpdateText('prod-rtu-aceh', data.prodRtuAceh);
@@ -529,20 +602,88 @@ Status Sumur :
             safeUpdateText('prod-rtu-sumut', data.prodRtuSumut);
             safeUpdateText('prod-rtu-sumut-change', data.prodRtuSumutChange);
             safeUpdateText('crude-oil-stock', data.crudeOilStock);
-            safeUpdateText('prod-gas', data.prodGas);
+            
+            // Update Gas Metrics
+            safeUpdateText('prod-gas-total', data.prodGasTotal);
+            safeUpdateText('prod-gas-total-change', data.prodGasTotalChange);
+            safeUpdateText('prod-gas-mtd', tempGasData.totalMtd);
+            safeUpdateText('prod-gas-ytd', tempGasData.totalYtd);
+            
+            safeUpdateText('prod-gas-aceh', data.prodGasAceh);
+            safeUpdateText('prod-gas-aceh-percent', data.prodGasAcehPercent);
+            safeUpdateText('prod-gas-aceh-mtd', tempGasData.acehMtd);
+            safeUpdateText('prod-gas-aceh-ytd', tempGasData.acehYtd);
+            
+            safeUpdateText('prod-gas-sumut', data.prodGasSumut);
+            safeUpdateText('prod-gas-sumut-percent', data.prodGasSumutPercent);
+            safeUpdateText('prod-gas-sumut-mtd', tempGasData.sumutMtd);
+            safeUpdateText('prod-gas-sumut-ytd', tempGasData.sumutYtd);
+
+            if (data.waterInjectionPercentage) updateProgressBar('water-injection-fill', data.waterInjectionPercentage);
             safeUpdateText('water-injection', data.waterInjection);
             safeUpdateText('sumur-low-bbls', data.sumurLow);
             safeUpdateText('sumur-gain-bbls', data.sumurGain);
             safeUpdateText('sumur-off-bbls', data.sumurOff);
             
-            if (data.prodGasPercentage) updateProgressBar('prod-gas-fill', data.prodGasPercentage);
-            if (data.waterInjectionPercentage) updateProgressBar('water-injection-fill', data.waterInjectionPercentage);
-
             window.updateList('low', reportText, false);
             window.updateList('gain', reportText, false);
             window.updateList('off', reportText, false);
+
+            parseAndRenderTopWells(reportText);
         };
         
+        // Fungsi baru untuk memparsing dan merender tabel 10 sumur teratas
+        function parseAndRenderTopWells(reportText) {
+            const tableBody = document.getElementById('top-wells-table-body');
+            if (!tableBody) return;
+            
+            tableBody.innerHTML = '';
+            
+            const lines = reportText.split('\n');
+            const startIndex = lines.findIndex(line => line.includes('Sepuluh (10) Sumur dengan produksi terbesar:'));
+
+            if (startIndex === -1) {
+                console.warn("Bagian 'Sepuluh (10) Sumur' tidak ditemukan.");
+                return;
+            }
+
+            const wellsData = [];
+            // Mulai dari baris setelah header dan sub-header
+            for (let i = startIndex + 2; i < startIndex + 12 && i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (line.match(/^[\d.]+\./)) { // Pastikan baris adalah entri sumur
+                    const parts = line.split(':');
+                    const wellName = parts[0].replace(/^[\d.]+\./, '').trim();
+                    
+                    const productionData = parts[1].split('/').map(p => p.trim());
+                    const gross = productionData[0].replace(/[\s\u00A0]/g, ''); // Hapus spasi dan non-breaking space
+                    const nett = productionData[1].replace(/[\s\u00A0]/g, '');
+                    const gas = parts[2].trim();
+                    
+                    wellsData.push({
+                        name: wellName,
+                        gross: gross,
+                        nett: nett,
+                        gas: gas
+                    });
+                }
+            }
+
+            wellsData.forEach((well, index) => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 transition-colors duration-200';
+                row.innerHTML = `
+                    <td class="py-3 px-4 font-semibold text-gray-700">${index + 1}</td>
+                    <td class="py-3 px-4" contenteditable="true">${well.name}</td>
+                    <td class="py-3 px-4 text-center" contenteditable="true">${well.gross}</td>
+                    <td class="py-3 px-4 text-center" contenteditable="true">${well.nett}</td>
+                    <td class="py-3 px-4 text-center" contenteditable="true">${well.gas}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+
         window.initializeFirebaseAndLoadData = initializeFirebaseAndLoadData;
         window.db = db;
         window.auth = auth;
