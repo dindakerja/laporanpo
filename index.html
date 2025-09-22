@@ -231,39 +231,22 @@
     <!-- Firebase and main application script -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, writeBatch, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
         setLogLevel('debug');
 
-        // PENTING: Menggunakan konfigurasi Firebase yang disediakan
-        let firebaseConfig = {};
-        let firebaseInitialized = false;
+        // PENTING: Ganti nilai placeholder ini dengan konfigurasi Firebase Anda!
+        const firebaseConfig = {
+            apiKey: "AIzaSyCU4XFIAwkW2uqhwQR7mgWJW9fp6DsMZwM",
+            authDomain: "laporanpo.firebaseapp.com",
+            projectId: "laporanpo",
+            storageBucket: "laporanpo.firebasestorage.app",
+            messagingSenderId: "957972296356",
+            appId: "1:957972296356:web:3436dcc43a08e4fb44ac31"
+        };
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-        try {
-            const rawConfig = typeof __firebase_config !== 'undefined' ? __firebase_config : '{}';
-            if (rawConfig && rawConfig.trim() !== '{}' && rawConfig.trim() !== '') {
-                firebaseConfig = JSON.parse(rawConfig);
-                firebaseInitialized = true;
-            } else {
-                throw new Error("Konfigurasi Firebase tidak ditemukan atau kosong.");
-            }
-        } catch (e) {
-            console.error("Gagal memproses konfigurasi Firebase:", e);
-            const loadingOverlay = document.getElementById('loading-overlay');
-            if (loadingOverlay) {
-                loadingOverlay.innerHTML = `
-                    <div class="p-6 bg-red-100 border border-red-400 text-red-700 rounded-lg shadow-md">
-                        <p class="font-bold text-lg mb-2">Kesalahan Konfigurasi</p>
-                        <p class="text-sm">Konfigurasi Firebase tidak valid. Mohon hubungi administrator.</p>
-                        <p class="mt-2 text-xs text-red-500">Detail: ${e.message}</p>
-                    </div>
-                `;
-            }
-        }
-
+        
         let db;
         let auth;
         let userId;
@@ -303,15 +286,13 @@
         }
         
         async function initializeFirebaseAndLoadData() {
-            if (!firebaseInitialized) {
-                console.error("Firebase tidak diinisialisasi. Menghentikan pemuatan data.");
-                return;
-            }
-
             try {
                 const app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
+
+                // Otentikasi anonim untuk akses publik
+                await signInAnonymously(auth);
 
                 onAuthStateChanged(auth, async (user) => {
                     if (user) {
@@ -320,17 +301,7 @@
                         safeUpdateText('user-id-display', `ID Pengguna: ${userId.substring(0, 8)}...`);
                         setupFirestoreListeners();
                     } else {
-                        console.log("Pengguna tidak login. Mencoba sign in secara anonim atau dengan token.");
-                        try {
-                             if (initialAuthToken) {
-                                await signInWithCustomToken(auth, initialAuthToken);
-                             } else {
-                                await signInAnonymously(auth);
-                             }
-                        } catch(error) {
-                            console.error("Gagal login:", error);
-                            window.showMessageModal("Gagal Login", `Terjadi kesalahan saat otentikasi: ${error.message}`);
-                        }
+                        console.log("Pengguna tidak login.");
                     }
                 });
             } catch (error) {
