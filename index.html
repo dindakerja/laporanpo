@@ -416,12 +416,18 @@ Gas MTD = 2.1434 (95.2%), YTD = 2.2806 (104.1%).
 Prod Gas RTU-Sumut (Mmscfd) = 0.1892 (19.3%) thd sasaran 0.9788,
 Gas MTD = 0.2063 (21.1%), YTD = 0.2090 (26.4%).
 
-Sumur dengan produksi terbesar (5 teratas):
+Sepuluh (10) Sumur dengan produksi terbesar:
+	       Gross / Nett: Gas
 1. KSB-067/ESP : 459 / 182 : 40
 2. KSB-044/ESP : 200 / 113 : 34
 3. P-347/HPU : 164 / 106 : 0
 4. P-406/ESP : 975 / 90 : 18
 5. P-458/HPU : 84 / 84 : 0
+6. P-459/HPU : 70 / 70 : 0
+7. P-417/HPU : 65 / 65 : 0
+8. P-467/HPU : 60 / 60 : 0
+9. P-445/ESP : 55 / 55 : 0
+10. P-469/HPU : 50 / 50 : 0
 
 Status Sumur :	
 1. Jumlah Sumur Produksi Minyak : 88
@@ -606,18 +612,20 @@ Status Sumur :
             tableBody.innerHTML = '';
             
             const lines = reportText.split('\n');
-            const startIndex = lines.findIndex(line => line.includes('Sumur dengan produksi terbesar (5 teratas):'));
+            // Mengubah pencarian judul dari "5 teratas" ke "10 teratas"
+            const startIndex = lines.findIndex(line => line.includes('Sepuluh (10) Sumur dengan produksi terbesar:'));
 
             if (startIndex === -1) {
-                console.warn("Bagian 'Sumur dengan produksi terbesar' tidak ditemukan.");
+                console.warn("Bagian 'Sepuluh (10) Sumur dengan produksi terbesar' tidak ditemukan.");
                 return;
             }
             
             const wellsData = [];
             // Regex yang lebih kuat untuk menangkap data
-            const wellRegex = /^\s*(\d+\.)\s*(.*?)\s*:\s*([\d\s]+)\s*\/\s*([\d\s]+)\s*:\s*([\d\s]+)\s*$/;
+            const wellRegex = /^\s*(\d+)\.\s*(.*?)\s*:\s*([\d\s]+)\s*\/\s*([\d\s]+)\s*:\s*([\d\s]+)\s*$/;
             
-            for (let i = startIndex + 1; i < startIndex + 6 && i < lines.length; i++) {
+            // Loop untuk 5 baris pertama saja
+            for (let i = startIndex + 2; i < startIndex + 7 && i < lines.length; i++) {
                 const line = lines[i];
                 const match = line.match(wellRegex);
                 if (match) {
