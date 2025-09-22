@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Produksi & Proyek</title>
+    <title>Dashboard Produksi & Progres Proyek</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -18,7 +18,6 @@
             outline-offset: 2px;
             background-color: #f9fafb;
         }
-        /* Custom progress bar styles */
         .progress-bar {
             height: 8px;
             border-radius: 9999px;
@@ -30,7 +29,6 @@
             background-color: #10b981;
             transition: width 0.3s ease-in-out;
         }
-        /* Modal styles */
         .modal {
             position: fixed;
             top: 0;
@@ -43,6 +41,18 @@
             align-items: center;
             z-index: 1000;
         }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
     </style>
 </head>
 <body class="bg-gray-100 p-4 sm:p-8">
@@ -53,7 +63,8 @@
             <p class="text-sm sm:text-base text-gray-500 mt-2">
                 <span contenteditable="true">Laporan Harian Produksi Field Rantau</span>
             </p>
-            <button onclick="openFullReportEditor()" class="absolute top-0 right-0 mt-2 mr-2 px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition-colors">
+            <p id="user-id-display" class="text-xs text-gray-400 mt-1">Memuat...</p>
+            <button id="edit-report-button" onclick="openFullReportEditor()" class="absolute top-0 right-0 mt-2 mr-2 px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
                 Edit Laporan
             </button>
         </header>
@@ -67,22 +78,22 @@
                     <h2 class="text-xl font-bold text-gray-800 mb-4">Ringkasan Produksi</h2>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
-                            <p class="text-3xl font-bold text-blue-600" id="total-prod-rtu" contenteditable="true">1,811</p>
+                            <p class="text-3xl font-bold text-blue-600" id="total-prod-rtu" contenteditable="true">...</p>
                             <p class="text-sm font-medium text-blue-500 mt-1">Total Prod RTU (bbls)</p>
-                            <p class="text-xs text-gray-400" id="total-prod-rtu-change" contenteditable="true">(+8 thd kemarin)</p>
+                            <p class="text-xs text-gray-400" id="total-prod-rtu-change" contenteditable="true">...</p>
                         </div>
                         <div class="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-                            <p class="text-3xl font-bold text-green-600" id="prod-rtu-aceh" contenteditable="true">1,733</p>
+                            <p class="text-3xl font-bold text-green-600" id="prod-rtu-aceh" contenteditable="true">...</p>
                             <p class="text-sm font-medium text-green-500 mt-1">Prod RTU-Aceh (bbls)</p>
-                            <p class="text-xs text-gray-400" id="prod-rtu-aceh-change" contenteditable="true">(+22 thd kemarin)</p>
+                            <p class="text-xs text-gray-400" id="prod-rtu-aceh-change" contenteditable="true">...</p>
                         </div>
                         <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
-                            <p class="text-3xl font-bold text-yellow-600" id="prod-rtu-sumut" contenteditable="true">78</p>
+                            <p class="text-3xl font-bold text-yellow-600" id="prod-rtu-sumut" contenteditable="true">...</p>
                             <p class="text-sm font-medium text-yellow-500 mt-1">Prod RTU-Sumut (bbls)</p>
-                            <p class="text-xs text-gray-400" id="prod-rtu-sumut-change" contenteditable="true">(-14 thd kemarin)</p>
+                            <p class="text-xs text-gray-400" id="prod-rtu-sumut-change" contenteditable="true">...</p>
                         </div>
                         <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
-                            <p class="text-3xl font-bold text-gray-600" id="crude-oil-stock" contenteditable="true">196,199</p>
+                            <p class="text-3xl font-bold text-gray-600" id="crude-oil-stock" contenteditable="true">...</p>
                             <p class="text-sm font-medium text-gray-500 mt-1">CRUDE OIL STOCK (bbls)</p>
                         </div>
                     </div>
@@ -93,31 +104,19 @@
                     <h2 class="text-xl font-bold text-gray-800 mb-4">Status Sumur</h2>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="bg-red-50 border border-red-200 rounded-lg p-4">
-                            <h3 class="font-semibold text-red-600 mb-2">Sumur Low <span id="sumur-low-bbls" contenteditable="true">(-41.5 Bbls)</span></h3>
-                            <ul class="text-sm text-gray-700 space-y-1" id="sumur-low-list">
-                                <li contenteditable="true">P-436/4 jam, 10.57 bbl (Water Cut Naik 50-73%)</li>
-                                <li contenteditable="true">P-414/5 jam, 7.28 bbl (Water Cut Naik 80-93%)</li>
-                                <li contenteditable="true">KSB-016/3 jam, 6.53 bbl (Fluktuasi Produksi)</li>
-                            </ul>
-                            <a href="#" class="text-xs text-red-400 hover:underline" onclick="showMore('low')">Lihat lebih banyak...</a>
+                            <h3 class="font-semibold text-red-600 mb-2">Sumur Low <span id="sumur-low-bbls" contenteditable="true">...</span></h3>
+                            <ul class="text-sm text-gray-700 space-y-1" id="sumur-low-list" data-list-section="low"></ul>
+                            <button onclick="toggleList('low')" class="text-xs text-red-400 hover:underline mt-2" data-toggle-button="low">Lihat lebih banyak...</button>
                         </div>
                         <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                            <h3 class="font-semibold text-green-600 mb-2">Sumur Gain <span id="sumur-gain-bbls" contenteditable="true">(+79.07 Bbls)</span></h3>
-                            <ul class="text-sm text-gray-700 space-y-1" id="sumur-gain-list">
-                                <li contenteditable="true">KSB-044/9 jam, 29.04 bbl (Water Cut Turun 48-43%)</li>
-                                <li contenteditable="true">P-417/4 jam, 17.92 bbl (Water Cut Turun 67-7%)</li>
-                                <li contenteditable="true">P-445/15 jam, 6.46 bbl (Fluktuasi Produksi)</li>
-                            </ul>
-                            <a href="#" class="text-xs text-green-400 hover:underline" onclick="showMore('gain')">Lihat lebih banyak...</a>
+                            <h3 class="font-semibold text-green-600 mb-2">Sumur Gain <span id="sumur-gain-bbls" contenteditable="true">...</span></h3>
+                            <ul class="text-sm text-gray-700 space-y-1" id="sumur-gain-list" data-list-section="gain"></ul>
+                            <button onclick="toggleList('gain')" class="text-xs text-green-400 hover:underline mt-2" data-toggle-button="gain">Lihat lebih banyak...</button>
                         </div>
                         <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                            <h3 class="font-semibold text-yellow-600 mb-2">Sumur Off <span id="sumur-off-bbls" contenteditable="true">(-12.89 Bbls)</span></h3>
-                            <ul class="text-sm text-gray-700 space-y-1" id="sumur-off-list">
-                                <li contenteditable="true">P-419/24 jam, 10.22 bbl (Operasional Rig)</li>
-                                <li contenteditable="true">P-473/1 jam, 2.67 bbl (Trouble Fuse putus)</li>
-                                <li contenteditable="true">KSB-009/8 jam, 0.00 bbl (Program Ganti Elmot)</li>
-                            </ul>
-                            <a href="#" class="text-xs text-yellow-400 hover:underline" onclick="showMore('off')">Lihat lebih banyak...</a>
+                            <h3 class="font-semibold text-yellow-600 mb-2">Sumur Off <span id="sumur-off-bbls" contenteditable="true">...</span></h3>
+                            <ul class="text-sm text-gray-700 space-y-1" id="sumur-off-list" data-list-section="off"></ul>
+                            <button onclick="toggleList('off')" class="text-xs text-yellow-400 hover:underline mt-2" data-toggle-button="off">Lihat lebih banyak...</button>
                         </div>
                     </div>
                 </div>
@@ -129,19 +128,19 @@
                         <div>
                             <div class="flex justify-between items-center mb-1">
                                 <span class="text-sm font-medium text-gray-700" contenteditable="true">Prod Gas (Mmscfd)</span>
-                                <span class="text-sm font-bold text-gray-900" id="prod-gas" contenteditable="true">2.3329 (72.2%)</span>
+                                <span class="text-sm font-bold text-gray-900" id="prod-gas" contenteditable="true">...</span>
                             </div>
                             <div class="progress-bar">
-                                <div class="progress-fill" style="width: 72.2%;"></div>
+                                <div class="progress-fill" id="prod-gas-fill"></div>
                             </div>
                         </div>
                         <div>
                             <div class="flex justify-between items-center mb-1">
                                 <span class="text-sm font-medium text-gray-700" contenteditable="true">Total Water Injection (bwpd)</span>
-                                <span class="text-sm font-bold text-gray-900" id="water-injection" contenteditable="true">21,620 (100.7%)</span>
+                                <span class="text-sm font-bold text-gray-900" id="water-injection" contenteditable="true">...</span>
                             </div>
                             <div class="progress-bar">
-                                <div class="progress-fill" style="width: 100%;"></div>
+                                <div class="progress-fill" id="water-injection-fill"></div>
                             </div>
                         </div>
                     </div>
@@ -185,10 +184,10 @@
                     <div id="projects-container" class="space-y-4">
                         <!-- Project cards will be injected here by JavaScript -->
                     </div>
-                    <button onclick="addProject()" class="mt-6 w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition-all">
+                    <button id="add-project-button" onclick="addProject()" class="mt-6 w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed" disabled>
                         Tambah Proyek
                     </button>
-                    <button onclick="deleteAllProjects()" class="mt-2 w-full py-2 px-4 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg shadow-md transition-all">
+                    <button id="delete-all-projects-button" onclick="deleteAllProjects()" class="mt-2 w-full py-2 px-4 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed" disabled>
                         Hapus Semua Proyek
                     </button>
                 </div>
@@ -212,27 +211,136 @@
         </div>
     </div>
 
-    <script>
-        // Initial data for project cards
-        const projects = [
-            { name: 'Implementasi Sistem ERP', team: 'Tim Alpha', dueDate: '30 Okt 2025', progress: 75 },
-            { name: 'Peningkatan Keamanan Data', team: 'Tim Beta', dueDate: '15 Nov 2025', progress: 50 },
-            { name: 'Pengembangan Aplikasi Mobile', team: 'Tim Gamma', dueDate: '20 Nov 2025', progress: 90 },
-            { name: 'Integrasi IoT di Lapangan', team: 'Tim Delta', dueDate: '10 Des 2025', progress: 40 },
-            { name: 'Optimalisasi Produksi', team: 'Tim Epsilon', dueDate: '05 Jan 2026', progress: 65 },
-            { name: 'Modernisasi Infrastruktur', team: 'Tim Zeta', dueDate: '25 Jan 2026', progress: 80 },
-            { name: 'Pelatihan Karyawan Baru', team: 'Tim Eta', dueDate: '01 Feb 2026', progress: 95 },
-            { name: 'Audit Keuangan Triwulan', team: 'Tim Theta', dueDate: '28 Feb 2026', progress: 30 }
-        ];
+    <!-- Modal for messages and confirmations -->
+    <div id="message-modal" class="modal hidden">
+        <div class="bg-white rounded-xl shadow-lg p-6 max-w-sm text-center">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4" id="message-title"></h3>
+            <p class="text-sm text-gray-600 mb-6" id="message-content"></p>
+            <button onclick="closeMessageModal()" class="w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">
+                OK
+            </button>
+        </div>
+    </div>
 
-        // The full report text to be used in the editor modal
-        let fullReportText = `Assalamualaikum Warahmatullahi Wabarakatuh
+    <!-- Loading overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
+        <p class="ml-4 text-gray-600 text-lg">Memuat data...</p>
+    </div>
+
+    <!-- Firebase and main application script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, writeBatch, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        setLogLevel('debug');
+
+        // PENTING: Menggunakan konfigurasi Firebase yang Anda sediakan
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let db;
+        let auth;
+        let userId;
+
+        window.fullReportText = "";
+        window.projectsData = [];
+        let isReportLoaded = false;
+        let isProjectsLoaded = false;
+
+        function safeUpdateText(id, text) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = text;
+            } else {
+                console.warn(`Elemen dengan ID '${id}' tidak ditemukan. Tidak dapat memperbarui teks.`);
+            }
+        }
+
+        function safeUpdateStyle(id, property, value) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.style[property] = value;
+            } else {
+                console.warn(`Elemen dengan ID '${id}' tidak ditemukan. Tidak dapat memperbarui gaya.`);
+            }
+        }
+
+        function toggleButtons() {
+            if (isReportLoaded && isProjectsLoaded) {
+                document.getElementById('add-project-button').disabled = false;
+                document.getElementById('delete-all-projects-button').disabled = false;
+                document.getElementById('edit-report-button').disabled = false;
+                const loadingOverlay = document.getElementById('loading-overlay');
+                if (loadingOverlay) loadingOverlay.style.display = 'none';
+                console.log("Semua data berhasil dimuat. Tombol-tombol diaktifkan.");
+            }
+        }
+        
+        async function initializeFirebaseAndLoadData() {
+            try {
+                if (!firebaseConfig.projectId) {
+                    console.error("Firebase config is missing or incomplete.");
+                    const loadingOverlay = document.getElementById('loading-overlay');
+                    if (loadingOverlay) {
+                        loadingOverlay.querySelector('p').textContent = 'Firebase config tidak lengkap.';
+                    }
+                    return;
+                }
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        console.log("Pengguna berhasil login:", userId);
+                        safeUpdateText('user-id-display', `ID Pengguna: ${userId.substring(0, 8)}...`);
+                        setupFirestoreListeners();
+                    } else {
+                        console.log("Pengguna tidak login. Mencoba sign in secara anonim atau dengan token.");
+                        try {
+                             if (initialAuthToken) {
+                                await signInWithCustomToken(auth, initialAuthToken);
+                             } else {
+                                await signInAnonymously(auth);
+                             }
+                        } catch(error) {
+                            console.error("Gagal login:", error);
+                            window.showMessageModal("Gagal Login", `Terjadi kesalahan saat otentikasi: ${error.message}`);
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error("Gagal menginisialisasi Firebase. Pastikan konfigurasi API Key dan pengaturan lainnya benar.", error);
+                const loadingOverlay = document.getElementById('loading-overlay');
+                if (loadingOverlay) {
+                    loadingOverlay.querySelector('p').textContent = 'Gagal memuat data. Silakan periksa konsol untuk detail.';
+                }
+            }
+        }
+
+        function setupFirestoreListeners() {
+            const reportDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'daily_report_content', 'main_report_doc');
+            
+            onSnapshot(reportDocRef, (docSnap) => {
+                try {
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        window.fullReportText = data.reportText || "";
+                        parseAndDisplayReport(window.fullReportText);
+                        console.log("Laporan harian berhasil diperbarui dari Firestore.");
+                    } else {
+                        console.log("Dokumen laporan tidak ditemukan, membuat dokumen baru.");
+                        const initialReport = `Assalamualaikum Warahmatullahi Wabarakatuh
 
 LAPORAN HARIAN PRODUKSI FIELD RANTAU, MINGGU 21 SEPTEMBER 2025.
 
 Produksi RTU Non Recover (std)	= 1,637 bbls (+27 thd kemarin).
-Recover/berkala (std)                      =   174 bbls (-19 thd kemarin).
-Total Prod RTU (std)                        = 1,811 bbls ( +8 thd kemarin), 69%.
+Recover/berkala (std)	= 174 bbls (-19 thd kemarin).
+Total Prod RTU (std)	= 1,811 bbls ( +8 thd kemarin), 69%.
 MTD = 1,747 bopd (66%), YTD = 1,933 bopd (76%).
 
 Total Prod RTU-Aceh (std)	= 1,733 bbls (+22 thd kemarin), 72%.
@@ -320,209 +428,392 @@ Status Sumur :
 4. Jumlah Sumur Off             : 47
 5. Jumlah Sumur Suspended      	: 822 
 (643 diketahui / 180 tidak diketahui).`;
+                        setDoc(reportDocRef, { reportText: initialReport, lastUpdated: serverTimestamp() });
+                    }
+                    isReportLoaded = true;
+                    toggleButtons();
+                } catch (error) {
+                    console.error("Kesalahan saat memproses laporan dari Firestore:", error);
+                    window.showMessageModal("Kesalahan", "Gagal memuat laporan. Periksa konsol untuk detail.");
+                }
+            }, (error) => {
+                console.error("Gagal mendapatkan laporan dari Firestore:", error);
+                window.showMessageModal("Kesalahan", "Gagal memuat laporan. Periksa konsol untuk detail.");
+            });
 
-        // Function to create and populate a project card
+            const projectsColRef = collection(db, 'artifacts', appId, 'public', 'data', 'projects');
+
+            onSnapshot(projectsColRef, (snapshot) => {
+                try {
+                    const fetchedProjects = [];
+                    snapshot.forEach(doc => {
+                        fetchedProjects.push({ id: doc.id, ...doc.data() });
+                    });
+                    window.projectsData = fetchedProjects;
+                    renderProjectCards(window.projectsData);
+                    console.log("Daftar proyek berhasil diperbarui dari Firestore.");
+                    isProjectsLoaded = true;
+                    toggleButtons();
+                } catch (error) {
+                    console.error("Kesalahan saat memproses proyek dari Firestore:", error);
+                    window.showMessageModal("Kesalahan", "Gagal memuat proyek. Periksa konsol untuk detail.");
+                }
+            }, (error) => {
+                console.error("Gagal mendapatkan proyek dari Firestore:", error);
+                window.showMessageModal("Kesalahan", "Gagal memuat proyek. Periksa konsol untuk detail.");
+            });
+        }
+
+        window.parseAndDisplayReport = (reportText) => {
+            const lines = reportText.split('\n');
+            const data = {};
+
+            lines.forEach(line => {
+                const totalProdRtuMatch = line.match(/Total Prod RTU \(std\)\s*=\s*([\d,]*)\s*bbls\s*\((.*?)\)/);
+                if (totalProdRtuMatch) {
+                    data.totalProdRtu = totalProdRtuMatch[1];
+                    data.totalProdRtuChange = `(${totalProdRtuMatch[2].trim()})`;
+                }
+
+                const prodRtuAcehMatch = line.match(/Total Prod RTU-Aceh \(std\)\s*=\s*([\d,]*)\s*bbls\s*\((.*?)\)/);
+                if (prodRtuAcehMatch) {
+                    data.prodRtuAceh = prodRtuAcehMatch[1];
+                    data.prodRtuAcehChange = `(${prodRtuAcehMatch[2].trim()})`;
+                }
+
+                const prodRtuSumutMatch = line.match(/Total Prod RTU-Sumut \(std\)\s*=\s*([\d,]*)\s*bbls\s*\((.*?)\)/);
+                if (prodRtuSumutMatch) {
+                    data.prodRtuSumut = prodRtuSumutMatch[1];
+                    data.prodRtuSumutChange = `(${prodRtuSumutMatch[2].trim()})`;
+                }
+
+                const crudeStockMatch = line.match(/CRUDE OIL STOCK\s*:\s*([\d,]*)\s*bbls/);
+                if (crudeStockMatch) {
+                    data.crudeOilStock = crudeStockMatch[1];
+                }
+
+                const prodGasMatch = line.match(/Prod Gas \(Mmscfd\)\s*=\s*([\d\.]+)\s*\((.*?)\).*;\s*([\d\.]+)%\s*thd sasaran/);
+                if (prodGasMatch) {
+                    data.prodGas = `${prodGasMatch[1]} (${prodGasMatch[2].trim()})`;
+                    data.prodGasPercentage = parseFloat(prodGasMatch[3]);
+                }
+                
+                const waterInjMatch = line.match(/Total Water Injection\s*:\s*([\d,]*)\s*bwpd\s*\(([\d\.]+)%\)/);
+                if (waterInjMatch) {
+                    data.waterInjection = `${waterInjMatch[1]} (${waterInjMatch[2].trim()}%)`;
+                    data.waterInjectionPercentage = parseFloat(waterInjMatch[2]);
+                }
+
+                const sumurLowMatch = line.match(/Sumur Low = (.*)/);
+                if (sumurLowMatch) {
+                    data.sumurLow = sumurLowMatch[1].trim();
+                }
+
+                const sumurGainMatch = line.match(/Sumur Gain = (.*)/);
+                if (sumurGainMatch) {
+                    data.sumurGain = sumurGainMatch[1].trim();
+                }
+
+                const sumurOffMatch = line.match(/Sumur Off = (.*)/);
+                if (sumurOffMatch) {
+                    data.sumurOff = sumurOffMatch[1].trim();
+                }
+            });
+
+            safeUpdateText('total-prod-rtu', data.totalProdRtu);
+            safeUpdateText('total-prod-rtu-change', data.totalProdRtuChange);
+            safeUpdateText('prod-rtu-aceh', data.prodRtuAceh);
+            safeUpdateText('prod-rtu-aceh-change', data.prodRtuAcehChange);
+            safeUpdateText('prod-rtu-sumut', data.prodRtuSumut);
+            safeUpdateText('prod-rtu-sumut-change', data.prodRtuSumutChange);
+            safeUpdateText('crude-oil-stock', data.crudeOilStock);
+            safeUpdateText('prod-gas', data.prodGas);
+            safeUpdateText('water-injection', data.waterInjection);
+            safeUpdateText('sumur-low-bbls', data.sumurLow);
+            safeUpdateText('sumur-gain-bbls', data.sumurGain);
+            safeUpdateText('sumur-off-bbls', data.sumurOff);
+            
+            if (data.prodGasPercentage) updateProgressBar('prod-gas-fill', data.prodGasPercentage);
+            if (data.waterInjectionPercentage) updateProgressBar('water-injection-fill', data.waterInjectionPercentage);
+
+            window.updateList('low', reportText, false);
+            window.updateList('gain', reportText, false);
+            window.updateList('off', reportText, false);
+        };
+        
+        window.initializeFirebaseAndLoadData = initializeFirebaseAndLoadData;
+        window.db = db;
+        window.auth = auth;
+        window.userId = userId;
+
         function createProjectCard(project) {
             const projectCard = document.createElement('div');
             projectCard.className = 'bg-gray-50 border border-gray-200 rounded-lg p-4 shadow-sm space-y-2 relative';
+            projectCard.dataset.id = project.id;
             projectCard.innerHTML = `
-                <button onclick="deleteProject(this)" class="absolute top-2 right-2 text-red-500 hover:text-red-700 transition-colors">
+                <button onclick="deleteProject('${project.id}')" class="absolute top-2 right-2 text-red-500 hover:text-red-700 transition-colors">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" />
                     </svg>
                 </button>
-                <h3 class="font-semibold text-gray-800 pr-8" contenteditable="true">${project.name}</h3>
+                <h3 class="font-semibold text-gray-800 pr-8" contenteditable="true" oninput="updateProjectField('${project.id}', 'name', this.textContent)">${project.name}</h3>
                 <p class="text-xs text-gray-500">
-                    <span class="font-medium">Tim:</span> <span contenteditable="true">${project.team}</span>
+                    <span class="font-medium">Tim:</span> <span contenteditable="true" oninput="updateProjectField('${project.id}', 'team', this.textContent)">${project.team}</span>
                 </p>
                 <p class="text-xs text-gray-500">
-                    <span class="font-medium">Jatuh Tempo:</span> <span contenteditable="true">${project.dueDate}</span>
+                    <span class="font-medium">Jatuh Tempo:</span> <span contenteditable="true" oninput="updateProjectField('${project.id}', 'dueDate', this.textContent)">${project.dueDate}</span>
                 </p>
                 <div>
                     <div class="flex items-center justify-between mb-1">
                         <span class="text-xs font-medium text-gray-500">Progres:</span>
                         <span class="text-sm font-bold text-gray-700" data-progress-value>${project.progress}%</span>
                     </div>
-                    <input type="range" min="0" max="100" value="${project.progress}" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
+                    <input type="range" min="0" max="100" value="${project.progress}" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" oninput="updateProgress('${project.id}', this.value, this)" />
                 </div>
             `;
-            const slider = projectCard.querySelector('input[type="range"]');
-            const valueSpan = projectCard.querySelector('[data-progress-value]');
-            slider.addEventListener('input', (event) => {
-                valueSpan.textContent = `${event.target.value}%`;
-            });
             return projectCard;
         }
 
-        // Function to handle the "Tambah Proyek" button
-        function addProject() {
+        window.renderProjectCards = (projects) => {
             const projectsContainer = document.getElementById('projects-container');
+            if (projectsContainer) {
+                projectsContainer.innerHTML = '';
+                projects.forEach(project => {
+                    projectsContainer.appendChild(createProjectCard(project));
+                });
+            }
+        };
+
+        window.updateProgress = async (id, value, element) => {
+            const valueSpan = element.closest('div').querySelector('[data-progress-value]');
+            valueSpan.textContent = `${value}%`;
+            if (!db) {
+                console.error("Database tidak siap. Tidak dapat memperbarui progres.");
+                return;
+            }
+            try {
+                const projectsColRef = collection(db, 'artifacts', appId, 'public', 'data', 'projects');
+                const projectDocRef = doc(projectsColRef, id);
+                await updateDoc(projectDocRef, { progress: parseInt(value) });
+            } catch (e) {
+                console.error("Gagal memperbarui progres:", e);
+                window.showMessageModal("Kesalahan", `Gagal memperbarui progres: ${e.message}`);
+            }
+        };
+
+        window.updateProjectField = async (id, field, value) => {
+             if (!db) {
+                console.error("Database tidak siap. Tidak dapat memperbarui bidang proyek.");
+                return;
+            }
+            try {
+                const projectsColRef = collection(db, 'artifacts', appId, 'public', 'data', 'projects');
+                const projectDocRef = doc(projectsColRef, id);
+                await updateDoc(projectDocRef, { [field]: value });
+            } catch (e) {
+                console.error("Gagal memperbarui bidang proyek:", e);
+                window.showMessageModal("Kesalahan", `Gagal memperbarui proyek: ${e.message}`);
+            }
+        };
+        
+        window.addProject = async () => {
+            if (!db) {
+                console.error("Database tidak siap. Silakan coba lagi sebentar.");
+                window.showMessageModal("Gagal", "Database tidak siap. Coba lagi dalam beberapa detik.");
+                return;
+            }
+            const projectsColRef = collection(db, 'artifacts', appId, 'public', 'data', 'projects');
             const newProject = {
                 name: 'Proyek Baru',
                 team: 'Tim Baru',
                 dueDate: 'Tanggal Jatuh Tempo',
-                progress: 0
+                progress: 0,
+                createdAt: serverTimestamp()
             };
-            projectsContainer.appendChild(createProjectCard(newProject));
-        }
-
-        // Function to delete a single project card
-        function deleteProject(buttonElement) {
-            const projectCard = buttonElement.closest('.bg-gray-50');
-            if (projectCard) {
-                projectCard.remove();
+            try {
+                await addDoc(projectsColRef, newProject);
+                console.log("Proyek baru berhasil ditambahkan.");
+            } catch (e) {
+                console.error("Gagal menambahkan proyek:", e);
+                window.showMessageModal("Gagal", `Gagal menambahkan proyek: ${e.message}`);
             }
-        }
+        };
 
-        // Function to handle the "Hapus Semua Proyek" button
-        function deleteAllProjects() {
-            const projectsContainer = document.getElementById('projects-container');
-            projectsContainer.innerHTML = ''; // Clear all child elements
-        }
+        window.deleteProject = async (id) => {
+            if (!db) {
+                console.error("Database tidak siap. Tidak dapat menghapus proyek.");
+                window.showMessageModal("Gagal", "Database tidak siap. Coba lagi dalam beberapa detik.");
+                return;
+            }
+            const projectsColRef = collection(db, 'artifacts', appId, 'public', 'data', 'projects');
+            const projectDocRef = doc(projectsColRef, id);
+            try {
+                await deleteDoc(projectDocRef);
+                console.log("Proyek berhasil dihapus.");
+            } catch (e) {
+                console.error("Gagal menghapus proyek:", e);
+                window.showMessageModal("Gagal", `Gagal menghapus proyek: ${e.message}`);
+            }
+        };
 
-        // Function to show the full report editor modal
-        function openFullReportEditor() {
-            const modal = document.getElementById('edit-modal');
-            const editor = document.getElementById('report-editor');
-            editor.value = fullReportText;
-            modal.classList.remove('hidden');
-        }
+        window.deleteAllProjects = async () => {
+            if (!db) {
+                console.error("Database tidak siap. Tidak dapat menghapus semua proyek.");
+                window.showMessageModal("Gagal", "Database tidak siap. Coba lagi dalam beberapa detik.");
+                return;
+            }
+            window.showMessageModal("Konfirmasi", "Apakah Anda yakin ingin menghapus semua proyek?", true, async () => {
+                const projectsColRef = collection(db, 'artifacts', appId, 'public', 'data', 'projects');
+                const projectsSnapshot = await getDocs(projectsColRef);
+                const batch = writeBatch(db);
 
-        // Function to close the modal
-        function closeFullReportEditor() {
-            const modal = document.getElementById('edit-modal');
-            modal.classList.add('hidden');
-        }
+                projectsSnapshot.forEach(doc => {
+                    batch.delete(doc.ref);
+                });
 
-        // Function to save and parse the full report text back to the dashboard
-        function saveFullReport() {
-            const newText = document.getElementById('report-editor').value;
-            // PENTING: Perbarui variabel global agar editor selalu menampilkan versi terbaru
-            fullReportText = newText;
-            
-            const lines = newText.split('\n');
-            const data = {};
-
-            lines.forEach(line => {
-                // Gunakan regex untuk parsing yang lebih tangguh
-                const totalProdRtuMatch = line.match(/Total Prod RTU \(std\)\s*=\s*(\d{1,3},?\d*)\s*bbls\s*\((.*?)\)/);
-                if (totalProdRtuMatch) {
-                    data.totalProdRtu = totalProdRtuMatch[1];
-                    data.totalProdRtuChange = `(${totalProdRtuMatch[2].trim()})`;
-                }
-
-                const prodRtuAcehMatch = line.match(/Total Prod RTU-Aceh \(std\)\s*=\s*(\d{1,3},?\d*)\s*bbls\s*\((.*?)\)/);
-                if (prodRtuAcehMatch) {
-                    data.prodRtuAceh = prodRtuAcehMatch[1];
-                    data.prodRtuAcehChange = `(${prodRtuAcehMatch[2].trim()})`;
-                }
-
-                const prodRtuSumutMatch = line.match(/Total Prod RTU-Sumut \(std\)\s*=\s*(\d{1,3},?\d*)\s*bbls\s*\((.*?)\)/);
-                if (prodRtuSumutMatch) {
-                    data.prodRtuSumut = prodRtuSumutMatch[1];
-                    data.prodRtuSumutChange = `(${prodRtuSumutMatch[2].trim()})`;
-                }
-
-                const crudeStockMatch = line.match(/CRUDE OIL STOCK\s*:\s*(\d{1,3},?\d*)\s*bbls/);
-                if (crudeStockMatch) {
-                    data.crudeOilStock = crudeStockMatch[1];
-                }
-                
-                const prodGasMatch = line.match(/Prod Gas \(Mmscfd\)\s*=\s*([\d\.]*)\s*\((.*?)\)/);
-                if (prodGasMatch) {
-                    data.prodGas = `${prodGasMatch[1]} (${prodGasMatch[2].trim()})`;
-                }
-
-                const waterInjMatch = line.match(/Total Water Injection\s*:\s*(\d{1,3},?\d*)\s*bwpd\s*\((.*?)\)/);
-                if (waterInjMatch) {
-                    data.waterInjection = `${waterInjMatch[1]} (${waterInjMatch[2].trim()})`;
-                }
-
-                const sumurLowMatch = line.match(/Sumur Low\s*=\s*(.*)/);
-                if (sumurLowMatch) {
-                    data.sumurLow = sumurLowMatch[1].trim();
-                }
-
-                const sumurGainMatch = line.match(/Sumur Gain\s*=\s*(.*)/);
-                if (sumurGainMatch) {
-                    data.sumurGain = sumurGainMatch[1].trim();
-                }
-
-                const sumurOffMatch = line.match(/Sumur Off\s*=\s*(.*)/);
-                if (sumurOffMatch) {
-                    data.sumurOff = sumurOffMatch[1].trim();
+                try {
+                    await batch.commit();
+                    console.log("Semua proyek berhasil dihapus.");
+                } catch (e) {
+                    console.error("Gagal menghapus semua proyek:", e);
+                    window.showMessageModal("Gagal", `Gagal menghapus semua proyek: ${e.message}`);
                 }
             });
+        };
 
-            // Update the main dashboard with the new parsed data, dengan cek null
-            if (data.totalProdRtu) document.getElementById('total-prod-rtu').textContent = data.totalProdRtu;
-            if (data.totalProdRtuChange) document.getElementById('total-prod-rtu-change').textContent = data.totalProdRtuChange;
-            if (data.prodRtuAceh) document.getElementById('prod-rtu-aceh').textContent = data.prodRtuAceh;
-            if (data.prodRtuAcehChange) document.getElementById('prod-rtu-aceh-change').textContent = data.prodRtuAcehChange;
-            if (data.prodRtuSumut) document.getElementById('prod-rtu-sumut').textContent = data.prodRtuSumut;
-            if (data.prodRtuSumutChange) document.getElementById('prod-rtu-sumut-change').textContent = data.prodRtuSumutChange;
-            if (data.crudeOilStock) document.getElementById('crude-oil-stock').textContent = data.crudeOilStock;
-            if (data.prodGas) document.getElementById('prod-gas').textContent = data.prodGas;
-            if (data.waterInjection) document.getElementById('water-injection').textContent = data.waterInjection;
-            if (data.sumurLow) document.getElementById('sumur-low-bbls').textContent = data.sumurLow;
-            if (data.sumurGain) document.getElementById('sumur-gain-bbls').textContent = data.sumurGain;
-            if (data.sumurOff) document.getElementById('sumur-off-bbls').textContent = data.sumurOff;
+        window.showMessageModal = (title, content, isConfirm = false, onConfirm = null) => {
+            const modal = document.getElementById('message-modal');
+            if (!modal) return;
+            safeUpdateText('message-title', title);
+            safeUpdateText('message-content', content);
 
+            const okButton = modal.querySelector('button');
+            okButton.textContent = 'OK';
+            okButton.onclick = closeMessageModal;
+            
+            modal.classList.remove('hidden');
+        };
 
-            // Update list items for Sumur Low, Gain, and Off
-            const sumurLowList = document.getElementById('sumur-low-list');
-            const sumurGainList = document.getElementById('sumur-gain-list');
-            const sumurOffList = document.getElementById('sumur-off-list');
+        window.closeMessageModal = () => {
+            const modal = document.getElementById('message-modal');
+            if (modal) modal.classList.add('hidden');
+        };
 
-            const lowListStart = newText.indexOf('Sumur Low =');
-            const gainListStart = newText.indexOf('Sumur Gain =');
-            const offListStart = newText.indexOf('Sumur Off =');
-            const actlStart = newText.indexOf('ACTL :');
-
-            if (lowListStart !== -1 && gainListStart !== -1) {
-                const lowListText = newText.substring(lowListStart, gainListStart).trim().split('\n').slice(1);
-                updateList(sumurLowList, lowListText);
-            } else {
-                updateList(sumurLowList, []); // Clear the list if the section is not found
+        window.openFullReportEditor = () => {
+            const modal = document.getElementById('edit-modal');
+            const editor = document.getElementById('report-editor');
+            if (modal && editor) {
+                editor.value = window.fullReportText;
+                modal.classList.remove('hidden');
             }
-            if (gainListStart !== -1 && offListStart !== -1) {
-                const gainListText = newText.substring(gainListStart, offListStart).trim().split('\n').slice(1);
-                updateList(sumurGainList, gainListText);
-            } else {
-                updateList(sumurGainList, []); // Clear the list if the section is not found
+        };
+
+        window.closeFullReportEditor = () => {
+            const modal = document.getElementById('edit-modal');
+            if (modal) modal.classList.add('hidden');
+        };
+
+        window.saveFullReport = async () => {
+            if (!db) {
+                console.error("Database tidak siap. Tidak dapat menyimpan laporan.");
+                window.showMessageModal("Gagal", "Database tidak siap. Coba lagi dalam beberapa detik.");
+                return;
             }
-            if (offListStart !== -1 && actlStart !== -1) {
-                const offListText = newText.substring(offListStart, actlStart).trim().split('\n').slice(1);
-                updateList(sumurOffList, offListText);
+            const editor = document.getElementById('report-editor');
+            if (!editor) return;
+            
+            const newText = editor.value;
+            const reportDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'daily_report_content', 'main_report_doc');
+            
+            try {
+                await setDoc(reportDocRef, { reportText: newText, lastUpdated: serverTimestamp() });
+                console.log("Laporan berhasil disimpan ke Firestore.");
+                window.closeFullReportEditor();
+            } catch (e) {
+                console.error("Gagal menyimpan laporan:", e);
+                window.showMessageModal("Kesalahan", "Gagal menyimpan laporan. Silakan periksa konsol untuk detail.");
+            }
+        };
+        
+        window.updateProgressBar = (id, percentage) => {
+            const fillElement = document.getElementById(id);
+            if (fillElement) {
+                safeUpdateStyle(id, 'width', `${Math.min(100, percentage)}%`);
+            }
+        };
+
+        window.updateList = (section, reportText, isExpanded) => {
+            const ulElement = document.getElementById(`sumur-${section}-list`);
+            const button = document.querySelector(`[data-toggle-button="${section}"]`);
+            if (!ulElement) return;
+
+            const listRegex = {
+                low: { start: /Sumur Low = (.*)/, end: /Sumur Gain =/ },
+                gain: { start: /Sumur Gain = (.*)/, end: /Sumur Off =/ },
+                off: { start: /Sumur Off = (.*)/, end: /ACTL :/ },
+            };
+            const initialVisibleItems = 5;
+
+            const regexStart = listRegex[section].start;
+            const regexEnd = listRegex[section].end;
+
+            const listStartMatch = reportText.match(regexStart);
+            const listEndMatch = reportText.match(regexEnd);
+            
+            if (!listStartMatch || !listEndMatch) {
+                ulElement.innerHTML = '';
+                if (button) button.classList.add('hidden');
+                return;
+            }
+
+            const startIndex = reportText.indexOf(listStartMatch[0]) + listStartMatch[0].length;
+            const endIndex = reportText.indexOf(listEndMatch[0], startIndex);
+            const listContent = reportText.substring(startIndex, endIndex).trim();
+            const allLines = listContent.split('\n').filter(line => line.trim().startsWith('*')).map(line => line.substring(1).trim());
+
+            ulElement.innerHTML = '';
+            
+            let linesToDisplay;
+            if (isExpanded) {
+                linesToDisplay = allLines;
+                if (button) button.textContent = 'Lihat lebih sedikit...';
             } else {
-                updateList(sumurOffList, []); // Clear the list if the section is not found
+                linesToDisplay = allLines.slice(0, initialVisibleItems);
+                if (button) button.textContent = 'Lihat lebih banyak...';
             }
             
-            closeFullReportEditor();
-        }
-
-        // Helper function to update a list with new content
-        function updateList(ulElement, newLines) {
-            ulElement.innerHTML = '';
-            newLines.forEach(line => {
+            linesToDisplay.forEach(line => {
                 const li = document.createElement('li');
-                li.textContent = line.trim();
+                li.textContent = line;
                 li.setAttribute('contenteditable', 'true');
                 ulElement.appendChild(li);
             });
-        }
-        
-        // Dummy function to demonstrate 'Lihat lebih banyak' links
-        function showMore(section) {
-            alert(`Fungsionalitas 'Lihat lebih banyak' akan menampilkan detail lebih lanjut tentang ${section}.`);
-        }
 
+            if (button) {
+                if (allLines.length <= initialVisibleItems) {
+                    button.classList.add('hidden');
+                } else {
+                    button.classList.remove('hidden');
+                }
+            }
+
+            ulElement.dataset.expanded = isExpanded;
+        };
+
+        window.toggleList = (section) => {
+            const ulElement = document.getElementById(`sumur-${section}-list`);
+            if (ulElement) {
+                const isExpanded = ulElement.dataset.expanded === 'true';
+                window.updateList(section, window.fullReportText, !isExpanded);
+            }
+        };
+        
         document.addEventListener('DOMContentLoaded', () => {
-            const projectsContainer = document.getElementById('projects-container');
-            projects.forEach(project => {
-                projectsContainer.appendChild(createProjectCard(project));
-            });
+            window.initializeFirebaseAndLoadData();
+            const loadingOverlay = document.getElementById('loading-overlay');
+            if (loadingOverlay) loadingOverlay.style.display = 'flex';
         });
+
     </script>
 </body>
 </html>
