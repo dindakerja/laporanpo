@@ -1180,10 +1180,11 @@ Status Sumur :
                 // Create a Set to ensure unique headers
                 const uniqueHeaders = new Set(selectedHeaders);
 
-                // Filter data to only include the 1st of each month
+                // Filter data to only include the 1st of each month and format dates
                 const originalLabels = chartConfigs[Array.from(uniqueHeaders)[0]].labels;
                 const filteredLabels = [];
                 const filteredData = {};
+                let allDataPoints = [];
 
                 // Initialize filtered data for each unique header
                 uniqueHeaders.forEach(header => {
@@ -1194,12 +1195,21 @@ Status Sumur :
                     const date = new Date(label);
                     // Check if the day is the 1st of the month
                     if (date.getDate() === 1) {
-                        filteredLabels.push(label);
+                        // Format the date for cleaner display
+                        filteredLabels.push(date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }));
                         uniqueHeaders.forEach(header => {
-                            filteredData[header].push(chartConfigs[header].data[index]);
+                            const value = chartConfigs[header].data[index];
+                            filteredData[header].push(value);
+                            allDataPoints.push(value);
                         });
                     }
                 });
+
+                // Calculate dynamic min and max for y-axis
+                const maxDataValue = Math.max(...allDataPoints);
+                const minDataValue = Math.min(...allDataPoints);
+                const yAxisMin = minDataValue > 0 ? minDataValue * 0.9 : 0; // Set min to 90% of the lowest value if it's positive
+                const yAxisMax = maxDataValue * 1.1; // Add 10% padding to the max value
 
                 // Populate datasets with the filtered data
                 uniqueHeaders.forEach(header => {
@@ -1248,11 +1258,12 @@ Status Sumur :
                         maintainAspectRatio: false,
                         scales: {
                             y: { 
-                                min: 0.6,
-                                max: 2.5,
+                                min: yAxisMin,
+                                max: yAxisMax,
                                 ticks: {
                                     callback: function(value, index, values) {
-                                        return new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0 }).format(value * 1000);
+                                        // Use toLocaleString for accurate number formatting with commas and decimals
+                                        return value.toLocaleString('id-ID', { minimumFractionDigits: 0 });
                                     }
                                 }
                             }
@@ -1269,7 +1280,8 @@ Status Sumur :
                                             label += ': ';
                                         }
                                         if (context.parsed.y !== null) {
-                                            label += new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0 }).format(context.parsed.y * 1000);
+                                            // Use toLocaleString for accurate number formatting with commas and decimals
+                                            label += context.parsed.y.toLocaleString('id-ID', { minimumFractionDigits: 0 });
                                         }
                                         return label;
                                     }
@@ -1308,12 +1320,13 @@ Status Sumur :
                 reader.onload = function(e) {
                     try {
                         const data = new Uint8Array(e.target.result);
-                        const workbook = XLSX.read(data, { type: 'array' });
+                        // Changed { raw: false } to { raw: true } to get raw numeric values from Excel, preventing formatting issues.
+                        const workbook = XLSX.read(data, { type: 'array', cellDates: true });
 
                         const firstSheetName = workbook.SheetNames[0];
                         const worksheet = workbook.Sheets[firstSheetName];
                         
-                        const jsonData = XLSX.utils.sheet_to_json(worksheet, { raw: false });
+                        const jsonData = XLSX.utils.sheet_to_json(worksheet, { raw: true, dateNF: 'yyyy-mm-dd' });
 
                         if (jsonData.length === 0) {
                             modalStatus.innerHTML = '<span class="text-red-500">File Excel tidak memiliki data yang cukup.</span>';
