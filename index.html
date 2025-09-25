@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Produksi & Progres Proyek</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SheetJS for reading Excel files -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body {
@@ -53,9 +60,115 @@
             align-items: center;
             z-index: 2000;
         }
+	.chart-card {
+            border: 1px solid #e5e7eb;
+            background-color: #f9fafb;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            height: 25rem;
+        }
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            max-width: 400px;
+            width: 90%;
+            position: relative;
+        }
+	
     </style>
 </head>
 <body class="bg-gray-100 p-4 sm:p-6 flex flex-col min-h-screen">
+	<!-- Main Dashboard Container -->
+    <div class="container mx-auto p-8 bg-white shadow-xl rounded-2xl border border-gray-200">
+        <header class="mb-8 text-center relative">
+            <h1 class="text-4xl font-bold text-gray-800">Excel Data Dashboard</h1>
+            <p class="text-gray-500 mt-2">Unggah file Excel untuk memvisualisasikan data Anda.</p>
+
+            <!-- File Upload Button -->
+            <div class="absolute top-0 right-0 p-4">
+                <button id="uploadButton" class="bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-blue-700 transition duration-300">
+                    Pilih File
+                </button>
+            </div>
+        </header>
+        
+        <!-- Filter Dropdown Section (initially hidden) -->
+        <div id="filterSection" class="hidden mb-6 flex justify-center gap-4">
+            <div class="w-full max-w-sm">
+                <label for="chartFilter1" class="block text-sm font-medium text-gray-700 mb-1 text-left">
+                    Grafik 1:
+                </label>
+                <select id="chartFilter1" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">Pilih Grafik</option>
+                </select>
+            </div>
+            <div class="w-full max-w-sm">
+                <label for="chartFilter2" class="block text-sm font-medium text-gray-700 mb-1 text-left">
+                    Grafik 2:
+                </label>
+                <select id="chartFilter2" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">Pilih Grafik</option>
+                </select>
+            </div>
+            <div class="w-full max-w-sm">
+                <label for="chartFilter3" class="block text-sm font-medium text-gray-700 mb-1 text-left">
+                    Grafik 3:
+                </label>
+                <select id="chartFilter3" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">Pilih Grafik</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Dynamic Chart Container -->
+        <div id="chartsContainer" class="mt-8 grid grid-cols-1 gap-6">
+            <!-- The single combined chart will be added here -->
+        </div>
+
+        <!-- Status Message Area -->
+        <div id="statusMessage" class="mt-6 text-center text-sm font-medium">
+            <span class="text-gray-400">Silakan unggah file Excel untuk memulai.</span>
+        </div>
+
+    </div>
+
+    <!-- Modal for File Upload -->
+    <div id="uploadModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">Unggah File Excel</h3>
+                <button id="closeModalButton" class="text-gray-400 hover:text-gray-600">&times;</button>
+            </div>
+            <div class="mb-4">
+                <label for="excelFileInput" class="sr-only">Pilih file Excel</label>
+                <input type="file" id="excelFileInput" accept=".xls,.xlsx" class="w-full text-gray-700
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-full file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-blue-50 file:text-blue-700
+                    hover:file:bg-blue-100 cursor-pointer"/>
+            </div>
+            <div id="modalStatus" class="text-center text-sm font-medium mt-2"></div>
+        </div>
+    </div>
+
+
+
 
     <div class="max-w-7xl mx-auto w-full flex-grow flex flex-col">
         <header class="text-center mb-6 relative">
@@ -1013,6 +1126,269 @@ Status Sumur :
             window.initializeFirebaseAndLoadData();
             const loadingOverlay = document.getElementById('loading-overlay');
             if (loadingOverlay) loadingOverlay.style.display = 'flex';
+        });
+
+	document.addEventListener('DOMContentLoaded', () => {
+            const uploadButton = document.getElementById('uploadButton');
+            const uploadModal = document.getElementById('uploadModal');
+            const closeModalButton = document.getElementById('closeModalButton');
+            const fileInput = document.getElementById('excelFileInput');
+            const chartFilter1 = document.getElementById('chartFilter1');
+            const chartFilter2 = document.getElementById('chartFilter2');
+            const chartFilter3 = document.getElementById('chartFilter3');
+            const filterSection = document.getElementById('filterSection');
+            const statusMessage = document.getElementById('statusMessage');
+            const modalStatus = document.getElementById('modalStatus');
+            const chartsContainer = document.getElementById('chartsContainer');
+            
+            // Store chart data and configurations
+            const chartConfigs = {};
+            let combinedChartInstance = null;
+
+            function getRandomColor() {
+                const r = Math.floor(Math.random() * 255);
+                const g = Math.floor(Math.random() * 255);
+                const b = Math.floor(Math.random() * 255);
+                return {
+                    borderColor: `rgb(${r}, ${g}, ${b})`,
+                    backgroundColor: `rgba(${r}, ${g}, ${b}, 0.2)`
+                };
+            }
+
+            function sanitizeHeader(header) {
+                return header.replace(/[^a-zA-Z0-9]/g, '_');
+            }
+
+            function renderCombinedChart() {
+                if (combinedChartInstance) {
+                    combinedChartInstance.destroy();
+                }
+                chartsContainer.innerHTML = '';
+                
+                const selectedHeaders = [
+                    chartFilter1.value,
+                    chartFilter2.value,
+                    chartFilter3.value
+                ].filter(value => value && value !== '');
+
+                const datasets = [];
+                let labels = [];
+
+                if (selectedHeaders.length === 0) {
+                    statusMessage.innerHTML = '<span class="text-gray-400">Pilih satu hingga tiga grafik untuk ditampilkan.</span>';
+                    return;
+                }
+
+                // Create a Set to ensure unique headers
+                const uniqueHeaders = new Set(selectedHeaders);
+
+                // Filter data to only include the 1st of each month
+                const originalLabels = chartConfigs[Array.from(uniqueHeaders)[0]].labels;
+                const filteredLabels = [];
+                const filteredData = {};
+
+                // Initialize filtered data for each unique header
+                uniqueHeaders.forEach(header => {
+                    filteredData[header] = [];
+                });
+                
+                originalLabels.forEach((label, index) => {
+                    const date = new Date(label);
+                    // Check if the day is the 1st of the month
+                    if (date.getDate() === 1) {
+                        filteredLabels.push(label);
+                        uniqueHeaders.forEach(header => {
+                            filteredData[header].push(chartConfigs[header].data[index]);
+                        });
+                    }
+                });
+
+                // Populate datasets with the filtered data
+                uniqueHeaders.forEach(header => {
+                    const config = chartConfigs[header];
+                    datasets.push({
+                        label: config.header,
+                        data: filteredData[header],
+                        borderColor: config.color.borderColor,
+                        backgroundColor: config.color.backgroundColor,
+                        tension: 0.2,
+                        fill: false,
+                        pointBackgroundColor: config.color.borderColor,
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: config.color.borderColor,
+                    });
+                });
+                
+                statusMessage.innerHTML = '';
+
+                const chartCard = document.createElement('div');
+                chartCard.className = 'chart-card w-full';
+                
+                const chartTitle = document.createElement('h2');
+                chartTitle.className = 'text-xl font-semibold text-gray-700 mb-4';
+                chartTitle.textContent = selectedHeaders.map(header => chartConfigs[header].header).join(' vs ');
+                if (selectedHeaders.length === 0) {
+                    chartTitle.textContent = "Pilih Grafik";
+                }
+                
+                const canvas = document.createElement('canvas');
+                canvas.id = `combinedChart`;
+                
+                chartCard.appendChild(chartTitle);
+                chartCard.appendChild(canvas);
+                chartsContainer.appendChild(chartCard);
+
+                combinedChartInstance = new Chart(canvas.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: filteredLabels,
+                        datasets: datasets
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { 
+                                min: 0.6,
+                                max: 2.5,
+                                ticks: {
+                                    callback: function(value, index, values) {
+                                        return new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0 }).format(value * 1000);
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: { display: true },
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false,
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            label += new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0 }).format(context.parsed.y * 1000);
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        },
+                        hover: { mode: 'nearest', intersect: true }
+                    }
+                });
+            }
+
+            uploadButton.addEventListener('click', () => {
+                uploadModal.classList.remove('hidden');
+            });
+
+            closeModalButton.addEventListener('click', () => {
+                uploadModal.classList.add('hidden');
+            });
+            
+            uploadModal.addEventListener('click', (e) => {
+                if (e.target.id === 'uploadModal') {
+                    uploadModal.classList.add('hidden');
+                }
+            });
+
+            fileInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (!file) {
+                    modalStatus.innerHTML = '';
+                    return;
+                }
+                
+                modalStatus.innerHTML = '<span class="text-blue-500">Memproses file...</span>';
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+
+                        const firstSheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[firstSheetName];
+                        
+                        const jsonData = XLSX.utils.sheet_to_json(worksheet, { raw: false });
+
+                        if (jsonData.length === 0) {
+                            modalStatus.innerHTML = '<span class="text-red-500">File Excel tidak memiliki data yang cukup.</span>';
+                            return;
+                        }
+
+                        const headers = Object.keys(jsonData[0]);
+                        
+                        if (headers.length <= 1) {
+                            modalStatus.innerHTML = '<span class="text-red-500">File Excel tidak memiliki kolom data yang dapat diplot.</span>';
+                            return;
+                        }
+
+                        // Clear previous chart configurations
+                        Object.keys(chartConfigs).forEach(key => delete chartConfigs[key]);
+                        chartFilter1.innerHTML = '<option value="">Pilih Grafik</option>';
+                        chartFilter2.innerHTML = '<option value="">Pilih Grafik</option>';
+                        chartFilter3.innerHTML = '<option value="">Pilih Grafik</option>';
+
+                        // Store chart data and populate dropdowns
+                        for (let i = 1; i < headers.length; i++) {
+                            const header = headers[i];
+                            const data = jsonData.map(row => parseFloat(row[header]) || 0);
+                            const sanitizedHeader = sanitizeHeader(header);
+                            const color = getRandomColor();
+
+                            // Store config for later use
+                            chartConfigs[sanitizedHeader] = {
+                                header,
+                                labels: jsonData.map(row => row[headers[0]]),
+                                data,
+                                color
+                            };
+
+                            const option1 = document.createElement('option');
+                            option1.value = sanitizedHeader;
+                            option1.textContent = header;
+                            chartFilter1.appendChild(option1);
+
+                            const option2 = document.createElement('option');
+                            option2.value = sanitizedHeader;
+                            option2.textContent = header;
+                            chartFilter2.appendChild(option2);
+
+                            const option3 = document.createElement('option');
+                            option3.value = sanitizedHeader;
+                            option3.textContent = header;
+                            chartFilter3.appendChild(option3);
+                        }
+
+                        filterSection.classList.remove('hidden');
+                        uploadModal.classList.add('hidden');
+                        statusMessage.innerHTML = `<span class="text-green-600">Berhasil memuat ${file.name}!</span>`;
+
+                        renderCombinedChart();
+
+                    } catch (error) {
+                        console.error("Error parsing Excel file:", error);
+                        modalStatus.innerHTML = '<span class="text-red-500">Kesalahan saat mengurai file. Pastikan itu adalah file Excel (.xls atau .xlsx) yang valid.</span>';
+                    }
+                };
+
+                reader.onerror = function(e) {
+                    console.error("Error reading file:", e);
+                    modalStatus.innerHTML = '<span class="text-red-500">Kesalahan saat membaca file.</span>';
+                };
+
+                reader.readAsArrayBuffer(file);
+            });
+
+            chartFilter1.addEventListener('change', renderCombinedChart);
+            chartFilter2.addEventListener('change', renderCombinedChart);
+            chartFilter3.addEventListener('change', renderCombinedChart);
         });
     </script>
 </body>
