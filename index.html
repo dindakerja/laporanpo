@@ -53,22 +53,6 @@
             align-items: center;
             z-index: 2000;
         }
-        .file-upload-container {
-            border: 2px dashed #d1d5db;
-            border-radius: 0.5rem;
-            padding: 1.5rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s ease-in-out;
-        }
-        .file-upload-container:hover {
-            border-color: #3b82f6;
-            background-color: #f9fafb;
-        }
-        .drag-active {
-            border-color: #3b82f6;
-            background-color: #e0f2fe;
-        }
     </style>
 </head>
 <body class="bg-gray-100 p-4 sm:p-6 flex flex-col min-h-screen">
@@ -82,17 +66,9 @@
             <p class="text-xs text-gray-400 mt-1">
                 <span id="user-id-display">Memuat ID Pengguna...</span> | Terakhir diperbarui: <span id="last-updated-date">...</span>
             </p>
-            <div class="absolute top-0 right-0 flex items-center gap-2 mt-1 mr-1">
-                <button id="upload-file-button" onclick="openUploadModal()" class="px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                    Unggah
-                </button>
-                <button id="csv-input-button" onclick="openCsvModal()" class="px-3 py-1 text-xs bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                    Input CSV
-                </button>
-                <button id="edit-report-button" onclick="openFullReportEditor()" class="px-3 py-1 text-xs bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                    Edit Laporan
-                </button>
-            </div>
+            <button id="edit-report-button" onclick="openFullReportEditor()" class="absolute top-0 right-0 mt-1 mr-1 px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                Edit Laporan
+            </button>
         </header>
 
         <!-- Main content container -->
@@ -173,9 +149,9 @@
                     </div>
                 </div>
 
-                <!-- Top 10 Wells Section -->
+                <!-- Top 5 Wells Section -->
                 <div class="bg-white rounded-xl shadow-lg p-5">
-                    <h2 class="text-xl font-bold text-gray-800 mb-4">Sumur dengan Produksi Terbesar (10 Teratas)</h2>
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Sumur dengan Produksi Terbesar (5 Teratas)</h2>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm text-left text-gray-600 border-collapse">
                             <thead>
@@ -223,27 +199,12 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- CSV Data Display Section -->
-                <div id="csv-data-display-section" class="bg-white rounded-xl shadow-lg p-5 hidden">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-xl font-bold text-gray-800">Data CSV yang Diunggah</h2>
-                        <button onclick="clearCsvDataDisplay()" class="px-3 py-1 text-xs bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg shadow-md transition-colors">
-                            Hapus Data CSV
-                        </button>
-                    </div>
-                    <div id="csv-table-container" class="overflow-x-auto">
-                        <!-- CSV data table will be inserted here -->
-                    </div>
-                </div>
-
             </div>
 
             <!-- Side Content: Progres Proyek -->
             <div class="md:w-1/3 space-y-6">
                 <div class="bg-white rounded-xl shadow-lg p-5">
                     <h2 class="text-xl font-bold text-gray-800 mb-4">Progres Proyek</h2>
-                    
                     <div id="projects-container" class="space-y-4">
                         <!-- Project cards will be injected here by JavaScript -->
                     </div>
@@ -267,88 +228,6 @@
                     </button>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- Modal Unggah File -->
-    <div id="upload-modal" class="modal hidden">
-        <div class="bg-white rounded-xl shadow-2xl p-6 w-11/12 max-w-sm flex flex-col">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold text-gray-800">Unggah File</h2>
-                <button onclick="closeUploadModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-            
-            <label id="drop-area" for="excel-file-input" class="file-upload-container">
-                <input type="file" id="excel-file-input" accept=".xlsx, .xls">
-                <div class="flex flex-col items-center justify-center text-gray-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 mb-2 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                        <line x1="12" y1="12" x2="12" y2="18"></line>
-                        <line x1="9" y1="15" x2="15" y2="15"></line>
-                    </svg>
-                    <p class="text-base font-medium">Seret dan lepas file di sini</p>
-                    <p class="text-xs text-gray-400 mt-1">atau <span class="text-blue-500 font-semibold">klik untuk memilih</span></p>
-                    <span class="text-xs text-gray-400 mt-1">Hanya .xlsx dan .xls yang didukung</span>
-                </div>
-            </label>
-
-            <div id="file-status-container" class="mt-4 text-sm text-gray-600">
-                <p id="file-status">Belum ada file yang dipilih.</p>
-                <a id="download-link" href="#" class="text-blue-500 hover:underline hidden mt-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block mr-1 -mt-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="7 10 12 15 17 10"></polyline>
-                        <line x1="12" y1="15" x2="12" y2="3"></line>
-                    </svg>
-                    Unduh File
-                </a>
-            </div>
-            
-            <button onclick="uploadFile()" id="upload-in-modal-button" class="mt-4 w-full py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-md transition-colors disabled:opacity-50" disabled>
-                Unggah File
-            </button>
-        </div>
-    </div>
-
-    <!-- Modal for CSV Input -->
-    <div id="csv-modal" class="modal hidden">
-        <div class="bg-white rounded-xl shadow-2xl p-6 w-11/12 max-w-sm flex flex-col">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold text-gray-800">Input Database dari CSV</h2>
-                <button onclick="closeCsvModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-            
-            <label id="csv-drop-area" for="csv-file-input" class="file-upload-container">
-                <input type="file" id="csv-file-input" accept=".csv" class="hidden">
-                <div class="flex flex-col items-center justify-center text-gray-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 mb-2 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                        <line x1="12" y1="12" x2="12" y2="18"></line>
-                        <line x1="9" y1="15" x2="15" y2="15"></line>
-                    </svg>
-                    <p class="text-base font-medium">Seret dan lepas file CSV di sini</p>
-                    <p class="text-xs text-gray-400 mt-1">atau <span class="text-purple-500 font-semibold">klik untuk memilih</span></p>
-                    <span class="text-xs text-gray-400 mt-1">Hanya .csv yang didukung</span>
-                </div>
-            </label>
-
-            <div id="csv-status-container" class="mt-4 text-sm text-gray-600">
-                <p id="csv-status">Belum ada file yang dipilih.</p>
-            </div>
-            
-            <button onclick="processCsvFile()" id="csv-in-modal-button" class="mt-4 w-full py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-lg shadow-md transition-colors disabled:opacity-50" disabled>
-                Proses & Simpan ke Database
-            </button>
         </div>
     </div>
 
@@ -393,20 +272,23 @@
     <!-- Firebase and main application script -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, writeBatch, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
         
         setLogLevel('debug');
 
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        const firebaseConfig = {
+            apiKey: "AIzaSyCU4XFIAwkW2uqhwQR7mgWJW9fp6DsMZwM",
+            authDomain: "laporanpo.firebaseapp.com",
+            projectId: "laporanpo",
+            storageBucket: "laporanpo.firebasestorage.app",
+            messagingSenderId: "957972296356",
+            appId: "1:957972296356:web:3436dcc43a08e4fb44ac31"
+        };
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-
-        let app;
+        
         let db;
         let auth;
-        let storage;
         let userId;
 
         window.fullReportText = "";
@@ -415,7 +297,6 @@
         let isProjectsLoaded = false;
         let isEditMode = false;
         let localProjectsBuffer = [];
-        let csvFileToProcess = null;
 
         function safeUpdateText(id, text) {
             const element = document.getElementById(id);
@@ -438,8 +319,6 @@
         function toggleButtons() {
             if (isReportLoaded && isProjectsLoaded) {
                 document.getElementById('edit-report-button').disabled = false;
-                document.getElementById('upload-file-button').disabled = false;
-                document.getElementById('csv-input-button').disabled = false;
                 const loadingOverlay = document.getElementById('loading-overlay');
                 if (loadingOverlay) loadingOverlay.style.display = 'none';
                 console.log("Semua data berhasil dimuat. Tombol-tombol diaktifkan.");
@@ -448,33 +327,20 @@
         
         async function initializeFirebaseAndLoadData() {
             try {
-                app = initializeApp(firebaseConfig);
+                const app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
-                storage = getStorage(app);
 
-                // Autentikasi pengguna dan tunggu hingga selesai sebelum memuat data
+                await signInAnonymously(auth);
+
                 onAuthStateChanged(auth, async (user) => {
                     if (user) {
                         userId = user.uid;
                         console.log("Pengguna berhasil login:", userId);
                         safeUpdateText('user-id-display', `ID Pengguna: ${userId.substring(0, 8)}...`);
                         setupFirestoreListeners();
-                        loadUploadedFileStatus();
                     } else {
-                        console.log("Pengguna tidak login. Mencoba masuk...");
-                        try {
-                            if (initialAuthToken) {
-                                await signInWithCustomToken(auth, initialAuthToken);
-                            } else {
-                                await signInAnonymously(auth);
-                            }
-                        } catch (error) {
-                            console.error("Gagal masuk:", error);
-                            safeUpdateText('user-id-display', 'Autentikasi Gagal.');
-                            const loadingOverlay = document.getElementById('loading-overlay');
-                            if (loadingOverlay) loadingOverlay.style.display = 'none';
-                        }
+                        console.log("Pengguna tidak login.");
                     }
                 });
             } catch (error) {
@@ -487,11 +353,6 @@
         }
 
         function setupFirestoreListeners() {
-            if (!userId) {
-                console.error("UID pengguna tidak tersedia. Tidak dapat memuat data.");
-                return;
-            }
-
             const reportDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'daily_report_content', 'main_report_doc');
             
             onSnapshot(reportDocRef, (docSnap) => {
@@ -635,248 +496,6 @@ Status Sumur :
                 window.showMessageModal("Kesalahan", "Gagal memuat proyek. Periksa konsol untuk detail.");
             });
         }
-        
-        async function loadUploadedFileStatus() {
-            if (!userId || !db) return;
-            const fileDocRef = doc(db, 'artifacts', appId, 'users', userId, 'uploadedFile', 'excelFile');
-            const docSnap = await getDoc(fileDocRef);
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                const fileStatusEl = document.getElementById('file-status');
-                const downloadLinkEl = document.getElementById('download-link');
-                if (fileStatusEl && downloadLinkEl) {
-                    fileStatusEl.textContent = `File diunggah: ${data.fileName}`;
-                    downloadLinkEl.href = data.fileUrl;
-                    downloadLinkEl.classList.remove('hidden');
-                }
-            }
-        }
-
-        window.openUploadModal = () => {
-             const modal = document.getElementById('upload-modal');
-             if (modal) {
-                 modal.classList.remove('hidden');
-             }
-        };
-
-        window.closeUploadModal = () => {
-             const modal = document.getElementById('upload-modal');
-             if (modal) {
-                 modal.classList.add('hidden');
-             }
-        };
-
-        window.uploadFile = async () => {
-            const fileInput = document.getElementById('excel-file-input');
-            const file = fileInput.files[0];
-
-            if (!file) {
-                window.showMessageModal("Peringatan", "Pilih file Excel terlebih dahulu.");
-                return;
-            }
-            if (!userId) {
-                window.showMessageModal("Kesalahan", "ID Pengguna tidak ditemukan. Coba segarkan halaman.");
-                return;
-            }
-
-            const fileStatusEl = document.getElementById('file-status');
-            const downloadLinkEl = document.getElementById('download-link');
-            const uploadButton = document.getElementById('upload-in-modal-button');
-            const originalButtonText = uploadButton.textContent;
-            uploadButton.textContent = "Mengunggah...";
-            uploadButton.disabled = true;
-
-            try {
-                // Mengubah path penyimpanan untuk memperbaiki kesalahan izin
-                const fileRef = ref(storage, `artifacts/${appId}/users/${userId}/uploads/${file.name}`);
-                await uploadBytes(fileRef, file);
-                const downloadURL = await getDownloadURL(fileRef);
-
-                const fileDocRef = doc(db, 'artifacts', appId, 'users', userId, 'uploadedFile', 'excelFile');
-                await setDoc(fileDocRef, {
-                    fileName: file.name,
-                    fileUrl: downloadURL,
-                    uploadedAt: serverTimestamp()
-                });
-                
-                fileStatusEl.textContent = `File berhasil diunggah: ${file.name}`;
-                downloadLinkEl.href = downloadURL;
-                downloadLinkEl.classList.remove('hidden');
-                console.log("File berhasil diunggah dan disimpan ke Firestore.");
-                window.showMessageModal("Berhasil", "File Excel berhasil diunggah!");
-
-            } catch (error) {
-                console.error("Gagal mengunggah file:", error);
-                fileStatusEl.textContent = 'Gagal mengunggah file. Silakan coba lagi.';
-                window.showMessageModal("Kesalahan", `Gagal mengunggah file: ${error.message}`);
-            } finally {
-                uploadButton.textContent = originalButtonText;
-                uploadButton.disabled = false;
-                fileInput.value = ''; // Reset the input
-            }
-        };
-
-        window.openCsvModal = () => {
-            const modal = document.getElementById('csv-modal');
-            if (modal) {
-                modal.classList.remove('hidden');
-            }
-        };
-
-        window.closeCsvModal = () => {
-            const modal = document.getElementById('csv-modal');
-            if (modal) {
-                modal.classList.add('hidden');
-            }
-        };
-
-        window.processCsvFile = async () => {
-            if (!csvFileToProcess) {
-                window.showMessageModal("Peringatan", "Pilih file CSV terlebih dahulu.");
-                return;
-            }
-            if (!userId) {
-                window.showMessageModal("Kesalahan", "ID Pengguna tidak ditemukan. Coba segarkan halaman.");
-                return;
-            }
-
-            const statusEl = document.getElementById('csv-status');
-            const processButton = document.getElementById('csv-in-modal-button');
-            const originalButtonText = processButton.textContent;
-            processButton.textContent = "Memproses...";
-            processButton.disabled = true;
-
-            try {
-                const reader = new FileReader();
-                reader.onload = async (e) => {
-                    const text = e.target.result;
-                    const parsedData = parseCsv(text);
-                    
-                    if (parsedData.length === 0) {
-                        const errorMessage = "File CSV kosong atau tidak memiliki data yang valid.";
-                        statusEl.textContent = errorMessage;
-                        window.showMessageModal("Gagal", errorMessage);
-                        processButton.textContent = originalButtonText;
-                        processButton.disabled = false;
-                        return;
-                    }
-
-                    await saveCsvToFirestore(parsedData);
-                    renderCsvDataToDashboard(parsedData);
-                    statusEl.textContent = `Berhasil mengimpor ${parsedData.length} baris data!`;
-                    window.showMessageModal("Berhasil", `Berhasil mengimpor ${parsedData.length} baris data ke database dan ditampilkan di dasbor.`);
-                    
-                };
-                reader.readAsText(csvFileToProcess);
-            } catch (error) {
-                statusEl.textContent = `Gagal memproses file: ${error.message}`;
-                console.error("Gagal memproses file CSV:", error);
-                window.showMessageModal("Kesalahan", `Gagal memproses file CSV: ${error.message}`);
-            } finally {
-                 processButton.textContent = originalButtonText;
-                 processButton.disabled = false;
-                 document.getElementById('csv-file-input').value = '';
-                 csvFileToProcess = null;
-            }
-        };
-
-        function parseCsv(text) {
-            const lines = text.split('\n').filter(line => line.trim() !== '');
-            if (lines.length <= 1) return [];
-
-            const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-            if (headers.some(h => h === '')) {
-                 console.error("Header tidak valid. Mungkin ada delimiter yang tidak rata atau baris kosong.");
-                 return [];
-            }
-            
-            const result = [];
-            for (let i = 1; i < lines.length; i++) {
-                const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
-                if (values.length === headers.length) {
-                    const row = {};
-                    headers.forEach((header, index) => {
-                        row[header] = values[index];
-                    });
-                    result.push(row);
-                } else {
-                     console.warn(`Melewatkan baris karena jumlah kolom tidak cocok. Baris: "${lines[i]}"`);
-                }
-            }
-            return result;
-        }
-
-        async function saveCsvToFirestore(data) {
-            if (!db || !userId) {
-                throw new Error("Database atau User ID tidak tersedia.");
-            }
-            const batch = writeBatch(db);
-            const collectionRef = collection(db, 'artifacts', appId, 'users', userId, 'csv_imports');
-            
-            for (const item of data) {
-                const docRef = doc(collectionRef);
-                const cleanItem = JSON.parse(JSON.stringify(item));
-                batch.set(docRef, { ...cleanItem, createdAt: serverTimestamp() });
-            }
-
-            await batch.commit();
-        }
-
-        // --- NEW FUNCTION TO RENDER CSV DATA TO DASHBOARD ---
-        window.renderCsvDataToDashboard = (data) => {
-            const displaySection = document.getElementById('csv-data-display-section');
-            const tableContainer = document.getElementById('csv-table-container');
-
-            if (!displaySection || !tableContainer) return;
-
-            displaySection.classList.remove('hidden');
-            tableContainer.innerHTML = ''; // Clear previous content
-
-            if (data.length === 0) {
-                tableContainer.innerHTML = '<p class="text-sm text-gray-500">Tidak ada data untuk ditampilkan.</p>';
-                return;
-            }
-
-            const headers = Object.keys(data[0]);
-            const table = document.createElement('table');
-            table.className = 'min-w-full text-sm text-left text-gray-600 border-collapse';
-
-            // Create table header
-            const thead = table.createTHead();
-            const headerRow = thead.insertRow();
-            headers.forEach(headerText => {
-                const th = document.createElement('th');
-                th.textContent = headerText;
-                th.className = 'py-2 px-4 font-semibold text-gray-700 uppercase bg-gray-50 rounded-lg';
-                headerRow.appendChild(th);
-            });
-            
-            // Create table body
-            const tbody = table.createTBody();
-            data.forEach(rowData => {
-                const tr = tbody.insertRow();
-                tr.className = 'hover:bg-gray-50 transition-colors duration-200';
-                headers.forEach(header => {
-                    const td = tr.insertCell();
-                    td.textContent = rowData[header] || '';
-                    td.className = 'py-2 px-4';
-                });
-            });
-
-            tableContainer.appendChild(table);
-        };
-        
-        window.clearCsvDataDisplay = () => {
-            const displaySection = document.getElementById('csv-data-display-section');
-            const tableContainer = document.getElementById('csv-table-container');
-            if (displaySection) {
-                displaySection.classList.add('hidden');
-            }
-            if (tableContainer) {
-                tableContainer.innerHTML = '';
-            }
-        };
-        // --- END NEW FUNCTION ---
 
         window.parseAndDisplayReport = (reportText) => {
             const lines = reportText.split('\n');
@@ -887,6 +506,7 @@ Status Sumur :
                 safeUpdateText('report-title-date', reportTitleMatch);
             }
             
+            // Temporary storage for MTD/YTD values
             const tempGasData = {};
 
             lines.forEach(line => {
@@ -936,15 +556,15 @@ Status Sumur :
                     tempGasData.totalMtd = `${gasMtdYtdTotalMatch[1]} (${gasMtdYtdTotalMatch[2]})`;
                     tempGasData.totalYtd = `${gasMtdYtdTotalMatch[3]} (${gasMtdYtdTotalMatch[4]})`;
                 }
-                
-                const gasMtdYtdAcehMatch = line.match(/Prod Gas RTU-Aceh.*?MTD = ([\d\.]+) \((.*?)\), YTD = ([\d\.]+) \((.*?)\)/);
-                if (gasMtdYtdAcehMatch) {
+
+                const gasMtdYtdAcehMatch = line.match(/Gas MTD = ([\d\.]+) \((.*?)\), YTD = ([\d\.]+) \((.*?)\)/);
+                if (gasMtdYtdAcehMatch && !tempGasData.acehMtd) { // ensure we only capture the first match for Aceh
                     tempGasData.acehMtd = `${gasMtdYtdAcehMatch[1]} (${gasMtdYtdAcehMatch[2]})`;
                     tempGasData.acehYtd = `${gasMtdYtdAcehMatch[3]} (${gasMtdYtdAcehMatch[4]})`;
                 }
                 
-                const gasMtdYtdSumutMatch = line.match(/Prod Gas RTU-Sumut.*?MTD = ([\d\.]+) \((.*?)\), YTD = ([\d\.]+) \((.*?)\)/);
-                if (gasMtdYtdSumutMatch) {
+                const gasMtdYtdSumutMatch = line.match(/Gas MTD = ([\d\.]+) \((.*?)\), YTD = ([\d\.]+) \((.*?)\)/);
+                if (gasMtdYtdSumutMatch && tempGasData.acehMtd && !tempGasData.sumutMtd) { // capture the second match for Sumut
                      tempGasData.sumutMtd = `${gasMtdYtdSumutMatch[1]} (${gasMtdYtdSumutMatch[2]})`;
                      tempGasData.sumutYtd = `${gasMtdYtdSumutMatch[3]} (${gasMtdYtdSumutMatch[4]})`;
                 }
@@ -965,6 +585,7 @@ Status Sumur :
                 }
             });
 
+            // Update Oil Metrics
             safeUpdateText('total-prod-rtu', data.totalProdRtu);
             safeUpdateText('total-prod-rtu-change', data.totalProdRtuChange);
             safeUpdateText('prod-rtu-aceh', data.prodRtuAceh);
@@ -973,6 +594,7 @@ Status Sumur :
             safeUpdateText('prod-rtu-sumut-change', data.prodRtuSumutChange);
             safeUpdateText('crude-oil-stock', data.crudeOilStock);
             
+            // Update Gas Metrics
             safeUpdateText('prod-gas-total', data.prodGasTotal);
             safeUpdateText('prod-gas-total-change', data.prodGasTotalChange);
             safeUpdateText('prod-gas-mtd', tempGasData.totalMtd);
@@ -999,6 +621,7 @@ Status Sumur :
             parseAndRenderTopWells(reportText);
         };
         
+        // Fungsi baru untuk memparsing dan merender tabel 5 sumur teratas
         function parseAndRenderTopWells(reportText) {
             const tableBody = document.getElementById('top-wells-table-body');
             if (!tableBody) return;
@@ -1006,6 +629,7 @@ Status Sumur :
             tableBody.innerHTML = '';
             
             const lines = reportText.split('\n');
+            // Mengubah pencarian judul dari "5 teratas" ke "10 teratas"
             const startIndex = lines.findIndex(line => line.includes('Sepuluh (10) Sumur dengan produksi terbesar:'));
 
             if (startIndex === -1) {
@@ -1014,9 +638,11 @@ Status Sumur :
             }
             
             const wellsData = [];
+            // Regex yang lebih kuat untuk menangkap data
             const wellRegex = /^\s*(\d+)\.\s*(.*?)\s*:\s*([\d\s]+)\s*\/\s*([\d\s]+)\s*:\s*([\d\s]+)\s*$/;
             
-            for (let i = startIndex + 2; i < startIndex + 12 && i < lines.length; i++) {
+            // Loop untuk 5 baris pertama saja
+            for (let i = startIndex + 2; i < startIndex + 7 && i < lines.length; i++) {
                 const line = lines[i];
                 const match = line.match(wellRegex);
                 if (match) {
@@ -1125,6 +751,7 @@ Status Sumur :
             updateLocalProject(id, 'progress', parseInt(value));
         };
         
+        // New functions for edit mode management
         function toggleProjectEditMode(isEditing) {
             isEditMode = isEditing;
             const editBtn = document.getElementById('edit-projects-button');
@@ -1159,11 +786,14 @@ Status Sumur :
             const batch = writeBatch(db);
             const projectsColRef = collection(db, 'artifacts', appId, 'public', 'data', 'projects');
 
+            // Handle updates and additions
             localProjectsBuffer.forEach(project => {
                 const docRef = doc(projectsColRef, project.id);
+                // We use set with merge: true to handle both new and existing documents
                 batch.set(docRef, project, { merge: true });
             });
             
+            // Handle deletions (find projects in original data but not in buffer)
             const idsToDelete = window.projectsData.filter(
                 original => !localProjectsBuffer.some(updated => updated.id === original.id)
             ).map(p => p.id);
@@ -1375,104 +1005,11 @@ Status Sumur :
                 window.updateList(section, window.fullReportText, !isExpanded);
             }
         };
-
+        
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('edit-projects-button').onclick = () => toggleProjectEditMode(true);
             document.getElementById('save-projects-button').onclick = saveProjects;
             document.getElementById('cancel-projects-button').onclick = cancelProjects;
-            
-            const dropArea = document.getElementById('drop-area');
-            const fileInput = document.getElementById('excel-file-input');
-
-            // Prevent default drag behaviors
-            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                dropArea.addEventListener(eventName, e => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }, false);
-            });
-
-            // Highlight drop area when a file is dragged over it
-            ['dragenter', 'dragover'].forEach(eventName => {
-                dropArea.addEventListener(eventName, () => dropArea.classList.add('drag-active'), false);
-            });
-            ['dragleave', 'drop'].forEach(eventName => {
-                dropArea.addEventListener(eventName, () => dropArea.classList.remove('drag-active'), false);
-            });
-
-            // Handle dropped files
-            dropArea.addEventListener('drop', e => {
-                const files = e.dataTransfer.files;
-                if (files.length > 0) {
-                    fileInput.files = files;
-                    updateFileStatus(files[0]);
-                }
-            }, false);
-
-            // Handle file selection from input
-            fileInput.addEventListener('change', e => {
-                if (e.target.files.length > 0) {
-                    updateFileStatus(e.target.files[0]);
-                }
-            });
-
-            function updateFileStatus(file) {
-                 const fileStatusEl = document.getElementById('file-status');
-                 const uploadButton = document.getElementById('upload-in-modal-button');
-                 if (fileStatusEl) {
-                     fileStatusEl.textContent = `File dipilih: ${file.name}`;
-                 }
-                 if (uploadButton) {
-                     uploadButton.disabled = false;
-                 }
-            }
-
-            // CSV Modal Logic
-            const csvDropArea = document.getElementById('csv-drop-area');
-            const csvFileInput = document.getElementById('csv-file-input');
-            const csvStatus = document.getElementById('csv-status');
-            const csvButton = document.getElementById('csv-in-modal-button');
-
-            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                csvDropArea.addEventListener(eventName, e => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }, false);
-            });
-
-            ['dragenter', 'dragover'].forEach(eventName => {
-                csvDropArea.addEventListener(eventName, () => csvDropArea.classList.add('drag-active'), false);
-            });
-
-            ['dragleave', 'drop'].forEach(eventName => {
-                csvDropArea.addEventListener(eventName, () => csvDropArea.classList.remove('drag-active'), false);
-            });
-            
-            csvDropArea.addEventListener('drop', e => {
-                const files = e.dataTransfer.files;
-                if (files.length > 0) {
-                    csvFileInput.files = files;
-                    updateCsvStatus(files[0]);
-                }
-            }, false);
-
-            csvFileInput.addEventListener('change', e => {
-                if (e.target.files.length > 0) {
-                    updateCsvStatus(e.target.files[0]);
-                }
-            });
-
-            function updateCsvStatus(file) {
-                if (file) {
-                    csvFileToProcess = file;
-                    csvStatus.textContent = `File dipilih: ${file.name}`;
-                    csvButton.disabled = false;
-                } else {
-                    csvStatus.textContent = 'Belum ada file yang dipilih.';
-                    csvButton.disabled = true;
-                }
-            }
-
             window.initializeFirebaseAndLoadData();
             const loadingOverlay = document.getElementById('loading-overlay');
             if (loadingOverlay) loadingOverlay.style.display = 'flex';
